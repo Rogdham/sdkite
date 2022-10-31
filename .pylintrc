@@ -1,0 +1,27 @@
+[BASIC]
+good-names =
+    i,
+    j,
+    k,
+    ex,
+    _,
+    T,
+
+[MESSAGES CONTROL]
+disable =
+    missing-class-docstring,
+    missing-function-docstring,
+    missing-module-docstring,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-branches,
+    too-many-instance-attributes,
+    too-many-locals,
+enable =
+    useless-suppression,
+
+[SIMILARITIES]
+ignore-imports=yes
+
+[TYPECHECK]
+signature-mutators=paginated

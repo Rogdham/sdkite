@@ -1,0 +1,22 @@
+[html]
+directory = coverage
+
+[paths]
+source =
+    src/sdkite/
+    .tox/py*/lib/python*/site-packages/sdkite/
+    .tox/py*/site-packages/sdkite/
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    def __str__
+    if __name__ == "__main__":
+    @overload
+    @abstractmethod
+show_missing = True
+
+[run]
+branch = True
+source = sdkite
