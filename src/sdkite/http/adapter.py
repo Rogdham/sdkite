@@ -1,5 +1,6 @@
+from functools import partial
 import sys
-from typing import Dict, List, Optional, Set, Tuple, TypeVar
+from typing import Any, Dict, List, Optional, Set, Tuple, TypeVar
 import warnings
 
 from sdkite import Adapter, AdapterSpec
@@ -14,9 +15,9 @@ from sdkite.http.utils import encode_request_body, urlsjoin
 from sdkite.utils import zip_reverse
 
 if sys.version_info < (3, 8):  # pragma: no cover
-    from typing_extensions import Literal
+    from typing_extensions import Literal, Protocol
 else:  # pragma: no cover
-    from typing import Literal
+    from typing import Literal, Protocol
 
 if sys.version_info < (3, 9):  # pragma: no cover
     from typing import Callable, Mapping
@@ -33,6 +34,31 @@ P = ParamSpec("P")
 T = TypeVar("T")
 
 
+class _HTTPAdapterRequestWithoutMethodReturn(Protocol):
+    def __call__(
+        self,
+        url: Optional[str] = None,
+        *,
+        body: object = None,
+        body_encoding: HTTPBodyEncoding = HTTPBodyEncoding.AUTO,
+        headers: Optional[Mapping[str, str]] = None,
+        stream_response: bool = False,
+    ) -> HTTPResponse:
+        ...
+
+
+class _HTTPAdapterRequestWithoutMethod:
+    name: str
+
+    def __set_name__(self, klass: Any, name: str) -> None:
+        self.name = name
+
+    def __get__(
+        self, instance: "HTTPAdapter", klass: Any
+    ) -> _HTTPAdapterRequestWithoutMethodReturn:
+        return partial(instance.request, self.name)
+
+
 class HTTPAdapter(Adapter):
     url: Optional[str]
     headers: HTTPHeaderDict
@@ -41,6 +67,14 @@ class HTTPAdapter(Adapter):
 
     def __init__(self, send_request: Callable[[HTTPRequest], HTTPResponse]) -> None:
         self._send_request = send_request
+
+    get = _HTTPAdapterRequestWithoutMethod()
+    options = _HTTPAdapterRequestWithoutMethod()
+    head = _HTTPAdapterRequestWithoutMethod()
+    post = _HTTPAdapterRequestWithoutMethod()
+    put = _HTTPAdapterRequestWithoutMethod()
+    patch = _HTTPAdapterRequestWithoutMethod()
+    delete = _HTTPAdapterRequestWithoutMethod()
 
     def request(
         self,

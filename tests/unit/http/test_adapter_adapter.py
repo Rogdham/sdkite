@@ -285,3 +285,40 @@ def test_request_with_interceptors_hierarchy() -> None:
         )
     ]
     assert response == send_request2.return_value
+
+
+@pytest.mark.parametrize(
+    "method", ["get", "options", "head", "post", "put", "patch", "delete"]
+)
+def test_adapter_request_sugar(method: str) -> None:
+    adapter, send_request, _ = create_adapter()
+    request_with_method = getattr(adapter, method)
+
+    response = request_with_method(
+        "https://www.example.com/foo/bar",
+        body="foobar",
+        body_encoding=HTTPBodyEncoding.JSON,
+        headers={
+            "authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
+            "referer": "https://www.example.com/",
+        },
+        stream_response=True,
+    )
+    assert response == send_request.return_value
+    assert send_request.call_args_list == [
+        call(
+            HTTPRequest(
+                method=method.upper(),
+                url="https://www.example.com/foo/bar",
+                headers=HTTPHeaderDict(
+                    {
+                        "authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
+                        "referer": "https://www.example.com/",
+                        "content-type": "application/json",
+                    }
+                ),
+                body=b'"foobar"',
+                stream_response=True,
+            )
+        )
+    ]

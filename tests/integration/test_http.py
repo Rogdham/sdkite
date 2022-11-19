@@ -22,12 +22,12 @@ class ApiUsers(Client):
     http = HTTPAdapterSpec(url="users", headers={"X-Toto": "Abc"})
 
     def get(self, user_id: int) -> User:
-        response = self.http.request("get", str(user_id))
+        response = self.http.get(str(user_id))
         return cast(User, response.data_json)
 
     @paginated(page=1)
     def get_all(self, pagination: Pagination) -> List[User]:
-        response = self.http.request("get", f"all/{pagination.page}")
+        response = self.http.get(f"all/{pagination.page}")
         return cast(List[User], response.data_json)
 
 
