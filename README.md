@@ -28,7 +28,7 @@ Main points before alpha version:
 - [ ] Improve HTTP adapter
   - [ ] Support for more request body types
   - [ ] Handle _bad_ status codes
-  - [ ] Builtin auth handlers like basic auth / bearer token
+  - [x] Builtin auth handlers like basic auth
   - [x] Usual shortcuts like `.get(...)` for `.request('get', ...)`
   - [ ] Allow to disable interceptors on a specific request
   - [ ] Wrapt `requests`' exceptions

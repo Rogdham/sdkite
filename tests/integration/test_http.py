@@ -1,16 +1,24 @@
-from base64 import b64encode
 import sys
 from typing import List, cast
 
 from requests_mock import Mocker
 
 from sdkite import Client, Pagination, paginated
-from sdkite.http import HTTPAdapterSpec
+from sdkite.http import BasicAuth, HTTPAdapterSpec, NoAuth
 
 if sys.version_info < (3, 8):  # pragma: no cover
     from typing_extensions import TypedDict
 else:  # pragma: no cover
     from typing import TypedDict
+
+
+class ApiPublic(Client):
+    http = HTTPAdapterSpec(url="public")
+    auth = NoAuth(http)
+
+    def version(self) -> str:
+        response = self.http.get("version")
+        return response.data_str
 
 
 class User(TypedDict):
@@ -32,17 +40,26 @@ class ApiUsers(Client):
 
 
 class Api(Client):
-    http = HTTPAdapterSpec(headers={"authorization": "Basic dGVzdHM6"})
+    http = HTTPAdapterSpec()
+    auth = BasicAuth(http, username="tests")
 
+    public: ApiPublic
     users: ApiUsers
 
     def __init__(self, url: str, password: str) -> None:
         super().__init__()
         self.http.url = url
-        self.http.headers["authorization"] += b64encode(password.encode()).decode()
+        self.auth.password = password
 
 
 def test_http(requests_mock: Mocker) -> None:
+    requests_mock.register_uri(
+        "GET",
+        "https://www.example.com/api/v1/public/version",
+        additional_matcher=lambda request: "Authorization" not in request.headers,
+        content=b"1.2.3",
+    )
+
     requests_mock.register_uri(
         "GET",
         "https://www.example.com/api/v1/users/1337",
@@ -70,6 +87,8 @@ def test_http(requests_mock: Mocker) -> None:
     )
 
     client = Api("https://www.example.com/api/v1", "s3cr3t")
+
+    assert client.public.version() == "1.2.3"
 
     user = client.users.get(1337)
     assert user == User(name="John Doe", age=42)

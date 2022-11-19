@@ -13,6 +13,7 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 - Usual shortcuts to `HTTPAdapter.requests(method, ...)`: `.get`, `.options`, `.head`,
   `.post`, `.put`, `.patch`, `.delete`
+- Add `BasicAuth` and `NoAuth` helpers for HTTP authorization management
 
 ## [0.1.0] - 2020-10-31
 
