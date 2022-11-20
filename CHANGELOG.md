@@ -14,6 +14,9 @@ adheres to [Semantic Versioning](https://semver.org/).
 - Usual shortcuts to `HTTPAdapter.requests(method, ...)`: `.get`, `.options`, `.head`,
   `.post`, `.put`, `.patch`, `.delete`
 - Add `BasicAuth` and `NoAuth` helpers for HTTP authorization management
+- `HTTPBodyEncoding` support for conversion of more object types: in addition to
+  `None`/`bytes`/`str`, add support for `bool`/`int`/`float`, as well as
+  `list`/`tuple`/`set`/`dict` of other supported types (recursively).
 
 ## [0.1.0] - 2020-10-31
 
