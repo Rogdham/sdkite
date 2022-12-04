@@ -13,11 +13,11 @@ else:  # pragma: no cover
 
 
 class ApiPublic(Client):
-    http = HTTPAdapterSpec(url="public")
-    auth = NoAuth(http)
+    _http = HTTPAdapterSpec(url="public")
+    _auth = NoAuth(_http)
 
     def version(self) -> str:
-        response = self.http.get("version")
+        response = self._http.get("version")
         return response.data_str
 
 
@@ -27,29 +27,29 @@ class User(TypedDict):
 
 
 class ApiUsers(Client):
-    http = HTTPAdapterSpec(url="users", headers={"X-Toto": "Abc"})
+    _http = HTTPAdapterSpec(url="users", headers={"X-Toto": "Abc"})
 
     def get(self, user_id: int) -> User:
-        response = self.http.get(str(user_id))
+        response = self._http.get(str(user_id))
         return cast(User, response.data_json)
 
     @paginated(page=1)
     def get_all(self, pagination: Pagination) -> List[User]:
-        response = self.http.get(f"all/{pagination.page}")
+        response = self._http.get(f"all/{pagination.page}")
         return cast(List[User], response.data_json)
 
 
 class Api(Client):
-    http = HTTPAdapterSpec()
-    auth = BasicAuth(http, username="tests")
+    _http = HTTPAdapterSpec()
+    _auth = BasicAuth(_http, username="tests")
 
     public: ApiPublic
     users: ApiUsers
 
     def __init__(self, url: str, password: str) -> None:
         super().__init__()
-        self.http.url = url
-        self.auth.password = password
+        self._http.url = url
+        self._auth.password = password
 
 
 def test_http(requests_mock: Mocker) -> None:

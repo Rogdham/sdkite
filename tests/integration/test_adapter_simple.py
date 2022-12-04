@@ -17,30 +17,30 @@ class ValueSpec(AdapterSpec[StringIO]):
 
 
 class ReadClient(Client):
-    value = ValueSpec()
+    _value = ValueSpec()
 
     def normal(self) -> str:
-        self.value.seek(0)
-        return self.value.read()
+        self._value.seek(0)
+        return self._value.read()
 
     def upper(self) -> str:
         return self.normal().upper()
 
 
 class WriteClient(Client):
-    value = ValueSpec()
+    _value = ValueSpec()
 
     def erase(self) -> None:
-        self.value.seek(0)
-        self.value.truncate()
+        self._value.seek(0)
+        self._value.truncate()
 
     def append(self, suffix: str) -> None:
-        self.value.seek(0, SEEK_END)
-        self.value.write(suffix)
+        self._value.seek(0, SEEK_END)
+        self._value.write(suffix)
 
 
 class RootClient(Client):
-    value = ValueSpec()
+    _value = ValueSpec()
 
     read: ReadClient
     write: WriteClient
@@ -52,10 +52,12 @@ def test_typing() -> None:
     assert isinstance(assert_type(client, RootClient), RootClient)
     assert isinstance(assert_type(client.read, ReadClient), ReadClient)
 
-    assert isinstance(assert_type(client.value, StringIO), StringIO)
-    assert isinstance(assert_type(client.read.value, StringIO), StringIO)
+    # pylint: disable=protected-access
 
-    assert isinstance(assert_type(RootClient.value, ValueSpec), ValueSpec)
+    assert isinstance(assert_type(client._value, StringIO), StringIO)
+    assert isinstance(assert_type(client.read._value, StringIO), StringIO)
+
+    assert isinstance(assert_type(RootClient._value, ValueSpec), ValueSpec)
 
 
 def test_complete() -> None:
