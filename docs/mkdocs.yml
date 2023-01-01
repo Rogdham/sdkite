@@ -1,0 +1,36 @@
+site_name: SDKite
+site_description: Simple framework for building SDKs and API clients
+site_author: Rogdham
+repo_url: https://github.com/rogdham/sdkite
+site_url: https://sdkite.rogdham.net/
+edit_uri: blob/master/docs/src
+docs_dir: src
+site_dir: ../build/docs
+nav:
+  - Home: index.md
+  - User guide:
+      - Quickstart: quickstart.md
+      - Pagination: pagination.md
+      - Typing: typing.md
+  - HTTP client:
+      # - Spec: fixme.md
+      - Request: http_request.md
+      - Response: http_response.md
+      - Authentication: http_auth.md
+      # - Interceptors: fixme.md
+      # - Exceptions: fixme.md
+  - External Links:
+      - Changelog: https://github.com/rogdham/sdkite/blob/master/CHANGELOG.md
+      - Issue tracker: https://github.com/rogdham/sdkite/issues
+      - SDKite @ GitHub: https://github.com/rogdham/sdkite
+      - SDKite @ PyPI: https://pypi.org/project/sdkite
+theme: readthedocs
+extra_css:
+  - css/extra.css
+markdown_extensions:
+  - admonition
+  - attr_list
+  - codehilite
+  - def_list
+  - md_in_html
+strict: true

@@ -18,6 +18,10 @@ adheres to [Semantic Versioning](https://semver.org/).
   `None`/`bytes`/`str`, add support for `bool`/`int`/`float`, as well as
   `list`/`tuple`/`set`/`dict` of other supported types (recursively).
 
+### :memo: Documentation
+
+- First version of the documentation
+
 ### :house: Internal
 
 - Necessary code changes following dev dependency update: mypy

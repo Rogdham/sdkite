@@ -12,7 +12,7 @@ A simple framework for building SDKs and API clients
 
 ---
 
-[📃 Changelog](./CHANGELOG.md)
+[📖 Documentation](https://sdkite.rogdham.net/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[📃 Changelog](./CHANGELOG.md)
 
 </div>
 
@@ -23,7 +23,8 @@ expected.
 
 Main points before alpha version:
 
-- [ ] Documentation
+- [x] Minimal documentation
+- [ ] Complete documentation
 - [ ] Handle retrying
 - [ ] Improve HTTP adapter
   - [x] Support for more request body types (basic types)

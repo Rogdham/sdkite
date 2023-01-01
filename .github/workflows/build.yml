@@ -43,8 +43,29 @@ jobs:
       - name: Run ${{ matrix.env }}
         run: tox -e ${{ matrix.env }}
 
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install tox
+      - name: Run docs
+        run: |
+          tox -e docs
+          mkdir -p dist
+          tar czf dist/docs.tar.gz -C build docs
+      - name: Save docs artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs
+          path: dist/docs.tar.gz
+
   build:
-    needs: [tests-py, tests-misc]
+    needs: [tests-py, tests-misc, docs]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -77,3 +98,21 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.pypi_password }}
+
+  deploy-docs:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Restore build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: docs
+          path: dist
+      - name: Extract docs
+        run: tar xf dist/docs.tar.gz -C dist
+      - name: Deploy docs
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: dist/docs

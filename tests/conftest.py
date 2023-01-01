@@ -10,10 +10,10 @@ def pytest_collection_modifyitems(
     config: pytest.Config,
     items: List[pytest.Item],
 ) -> None:
-    tests_root = Path(__file__).parent
+    root = Path(__file__).parent.parent
     for item in items:
-        relative = Path(item.fspath).parent.relative_to(tests_root)
-        mark = relative.parts[0]
+        relative = Path(item.fspath).parent.relative_to(root)
+        mark = next(part for part in relative.parts if part != "tests")
         item.add_marker(getattr(pytest.mark, mark))
 
 
