@@ -7,7 +7,13 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-[unreleased]: https://github.com/rogdham/bigxml/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/rogdham/sdkite/compare/v0.2.0...HEAD
+
+## [0.2.0] - 2023-01-01
+
+[0.2.0]: https://github.com/rogdham/sdkite/compare/v0.1.0...v0.2.0
+
+v0.2.0 expends the public API and adds documentation
 
 ### :rocket: Added
 
@@ -27,7 +33,7 @@ adheres to [Semantic Versioning](https://semver.org/).
 - Necessary code changes following dev dependency update: mypy
 - Fix a badge shield URL in readme
 
-## [0.1.0] - 2020-10-31
+## [0.1.0] - 2022-10-31
 
 [0.1.0]: https://github.com/rogdham/sdkite/releases/tag/v0.1.0
 
