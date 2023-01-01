@@ -1,7 +1,7 @@
 from binascii import crc32
 from inspect import Parameter, signature
 import sys
-from typing import TYPE_CHECKING, Any, List, Optional, cast, get_type_hints
+from typing import TYPE_CHECKING, Any, List, Optional, Union, cast, get_type_hints
 from unittest.mock import Mock, call
 
 import pytest
@@ -70,6 +70,19 @@ def test_paginated_offset() -> None:
         call(31, 63),
         call(63, 127),
     ]
+
+
+def test_paginated_offset_during_iteration() -> None:
+    @paginated()
+    def fct(pagination: Pagination) -> Iterable[int]:
+        for _ in range(10):
+            print(pagination.offset)
+            yield pagination.offset
+            if pagination.offset == 42:
+                pagination.finish()
+                break
+
+    assert list(fct()) == list(range(42))
 
 
 def test_paginated_context() -> None:
@@ -446,6 +459,21 @@ def test_paginated_wrapping_classmethod() -> None:
             4,
             5,
         ]
+
+
+def test_paginated_not_iterable() -> None:
+    @paginated()  # type: ignore[arg-type]
+    def fct(pagination: Pagination) -> Union[Iterable[int], int]:
+        if pagination.page < 10:
+            return [pagination.page]
+        return 42
+
+    output = fct()
+
+    with pytest.raises(TypeError) as excinfo:
+        list(output)
+
+    assert str(excinfo.value) == "'int' object is not iterable"
 
 
 def test_paginated_no_param() -> None:
