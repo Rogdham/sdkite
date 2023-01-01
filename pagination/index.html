@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Rogdham" /><link rel="canonical" href="https://sdkite.rogdham.net/pagination/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Pagination - SDKite</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../css/extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Pagination";
+        var mkdocs_page_input_path = "pagination.md";
+        var mkdocs_page_url = "/pagination/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> SDKite
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Pagination</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#by-page-index">By page index</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#by-the-position-of-the-first-item">By the position of the first item</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#by-the-reference-to-the-next-page">By the reference to the next page</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#decorated-function">Decorated function</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#the-pagination-object">The Pagination object</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#the-paginated-decorator">The paginated decorator</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../typing/">Typing</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">HTTP client</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../http_request/">Request</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../http_response/">Response</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../http_auth/">Authentication</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">External Links</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="https://github.com/rogdham/sdkite/blob/master/CHANGELOG.md">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/rogdham/sdkite/issues">Issue tracker</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/rogdham/sdkite">SDKite @ GitHub</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://pypi.org/project/sdkite">SDKite @ PyPI</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">SDKite</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>User guide &raquo;</li>
+      <li>Pagination</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/rogdham/sdkite/blob/master/docs/src/pagination.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="pagination">Pagination</h1>
+<p>A <code>paginated</code> decorator is provided to help when the same function should be called
+several times, with each call returning a partial set of the data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This works for any functions and methods, not just for methods of <code>Client</code>
+subclasses.</p>
+</div>
+<h2 id="overview">Overview</h2>
+<p>Your friend Ranis is a well-known wizard who has several spells for sale. She gives you
+a function that returns the spells she's selling, given a budget. However, at most 3
+items are returned at a time, so you have to call it multiple times to retrieve the list
+of all her spells.</p>
+<h3 id="by-page-index">By page index</h3>
+<p>Given the following <code>list_spells</code> function:</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; list_spells(max_price=50, page=0)
+['Crushing Burden Touch', 'Great Burden of Sin', 'Heavy Burden']
+
+&gt;&gt;&gt; list_spells(max_price=50, page=1)
+['Strong Feather', &quot;Tinur's Hoptoad&quot;, &quot;Ulms's Juicedaw's Feather&quot;]
+
+&gt;&gt;&gt; list_spells(max_price=50, page=2)
+['Far Silence', 'Soul Trap']
+
+&gt;&gt;&gt; list_spells(max_price=50, page=3)
+[]
+</code></pre>
+
+<p>Use <code>pagination.page</code>:</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; from sdkite import paginated
+
+&gt;&gt;&gt; @paginated()
+... def get_spells1(pagination, max_price):
+...     return list_spells(max_price=max_price, page=pagination.page)
+
+&gt;&gt;&gt; result = get_spells1(50)  # the only parameter of get_spells1 is max_price
+&gt;&gt;&gt; isinstance(result, Iterator)
+True
+
+&gt;&gt;&gt; for spell in result:
+...     print(repr(spell))
+'Crushing Burden Touch'
+'Great Burden of Sin'
+'Heavy Burden'
+'Strong Feather'
+&quot;Tinur's Hoptoad&quot;
+&quot;Ulms's Juicedaw's Feather&quot;
+'Far Silence'
+'Soul Trap'
+</code></pre>
+
+<h3 id="by-the-position-of-the-first-item">By the position of the first item</h3>
+<p>Given the following <code>list_spells</code> function:</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; list_spells(max_price=50, offset=0)
+['Crushing Burden Touch', 'Great Burden of Sin', 'Heavy Burden']
+
+&gt;&gt;&gt; list_spells(max_price=50, offset=1)  # overlap with last call
+['Great Burden of Sin', 'Heavy Burden', 'Strong Feather']
+</code></pre>
+
+<p>Use <code>pagination.offset</code>:</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; @paginated()
+... def get_spells2(pagination, max_price):
+...     return list_spells(max_price=max_price, offset=pagination.offset)
+
+&gt;&gt;&gt; for spell in get_spells2(50):
+...     print(repr(spell))
+'Crushing Burden Touch'
+'Great Burden of Sin'
+'Heavy Burden'
+'Strong Feather'
+&quot;Tinur's Hoptoad&quot;
+&quot;Ulms's Juicedaw's Feather&quot;
+'Far Silence'
+'Soul Trap'
+</code></pre>
+
+<h3 id="by-the-reference-to-the-next-page">By the reference to the next page</h3>
+<p>To avoid having invalid results due to items changing between two calls, some APIs gives
+you a reference to the next page of your query.</p>
+<p>Given the following <code>list_spells_with_ref</code> function:</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; list_spells_with_ref(max_price=50)
+(['Crushing Burden Touch', 'Great Burden of Sin', 'Heavy Burden'], '57656c636')
+
+&gt;&gt;&gt; list_spells_with_ref(cursor=&quot;57656c636&quot;)
+(['Strong Feather', &quot;Tinur's Hoptoad&quot;, &quot;Ulms's Juicedaw's Feather&quot;], 'f6d652074')
+
+&gt;&gt;&gt; list_spells_with_ref(cursor=&quot;f6d652074&quot;)
+(['Far Silence', 'Soul Trap'], '6f2042616')
+
+&gt;&gt;&gt; list_spells_with_ref(cursor=&quot;6f2042616&quot;)
+([], 'c6d6f7261')
+</code></pre>
+
+<p>Use <code>pagination.context</code> to store this reference:</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; @paginated()
+... def get_spells3(pagination, max_price):
+...     if pagination.context is None:
+...         data, next_cursor = list_spells_with_ref(max_price=max_price)
+...     else:
+...         data, next_cursor = list_spells_with_ref(cursor=pagination.context)
+...     pagination.context = next_cursor
+...     return data
+
+&gt;&gt;&gt; for spell in get_spells3(50):
+...     print(repr(spell))
+'Crushing Burden Touch'
+'Great Burden of Sin'
+'Heavy Burden'
+'Strong Feather'
+&quot;Tinur's Hoptoad&quot;
+&quot;Ulms's Juicedaw's Feather&quot;
+'Far Silence'
+'Soul Trap'
+</code></pre>
+
+<h2 id="usage">Usage</h2>
+<h3 id="decorated-function">Decorated function</h3>
+<p>The decorated function must take <code>pagination</code> as its first parameter, which will be
+inserted by the decorator with a <code>Pagination</code> instance.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For methods of a class, the <code>pagination</code> parameter must come just after <code>self</code>.</p>
+</div>
+<p>An iterable must be returned by the decorated function. Items of this iterable will be
+consumed one by one only when needed.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The returned iterable can be of any size, which can vary at each call. However, if
+the iterable is empty, it will be assumed that the current page is the last, unless
+<code>stop_when_empty=False</code> was passed to <code>paginated</code>.</p>
+</div>
+<h3 id="the-pagination-object">The <code>Pagination</code> object</h3>
+<p>The following attributes of <code>pagination</code> are available:</p>
+<dl>
+<dt><code>page</code> (read-only)</dt>
+<dd>
+<p>The index of the current page.</p>
+</dd>
+<dt><code>offset</code> (read-only)</dt>
+<dd>
+<p>The index of the next item.</p>
+</dd>
+<dt><code>context</code></dt>
+<dd>
+<p>Any arbitrary data that can be set on the <code>pagination</code> variable to persist from one
+call of the decorated function to the other.</p>
+</dd>
+<dt><code>finished</code> (read-only)</dt>
+<dd>
+<p>A boolean indicating if a new page is expected to come after the current one.</p>
+</dd>
+<dt><code>finish()</code></dt>
+<dd>
+<p>Call this method to indicate that the current page is the last one.</p>
+</dd>
+</dl>
+<h3 id="the-paginated-decorator">The <code>paginated</code> decorator</h3>
+<p>The following parameters can be passed to <code>paginated</code>:</p>
+<dl>
+<dt><code>page</code>, <code>offset</code>, <code>context</code></dt>
+<dd>
+<p>The initial values of the corresponding attributes of the <code>Pagination</code> object passed
+to the decorated function (default to <code>0</code>, <code>0</code> and <code>None</code> respectively).</p>
+</dd>
+<dt><code>stop_when_empty</code></dt>
+<dd>
+<p>Whether a next page will be fetched if no items have been generated on the current
+page (defaults to <code>True</code>). If <code>False</code>, the <code>finish</code> method of the <code>Pagination</code> object
+must me called to tell when to stop.</p>
+</dd>
+</dl>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../quickstart/" class="btn btn-neutral float-left" title="Quickstart"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../typing/" class="btn btn-neutral float-right" title="Typing">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/rogdham/sdkite" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../quickstart/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../typing/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

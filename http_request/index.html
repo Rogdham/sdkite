@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Rogdham" /><link rel="canonical" href="https://sdkite.rogdham.net/http_request/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Request - SDKite</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../css/extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Request";
+        var mkdocs_page_input_path = "http_request.md";
+        var mkdocs_page_url = "/http_request/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> SDKite
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User guide</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pagination/">Pagination</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../typing/">Typing</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">HTTP client</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Request</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#http-method">HTTP method</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#url">URL</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#body">Body</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#headers">Headers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#stream-mode">Stream mode</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../http_response/">Response</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../http_auth/">Authentication</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">External Links</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="https://github.com/rogdham/sdkite/blob/master/CHANGELOG.md">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/rogdham/sdkite/issues">Issue tracker</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/rogdham/sdkite">SDKite @ GitHub</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://pypi.org/project/sdkite">SDKite @ PyPI</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">SDKite</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>HTTP client &raquo;</li>
+      <li>Request</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/rogdham/sdkite/blob/master/docs/src/http_request.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="http-request">HTTP Request</h1>
+<h2 id="http-method">HTTP method</h2>
+<p>The first parameter of the <code>request</code> method of an HTTP adapter allows to specify the
+HTTP method to be used.</p>
+<p>The HTTP adapter provides syntactic sugar for regular HTTP methods: <code>get</code>, <code>options</code>,
+<code>head</code>, <code>post</code>, <code>put</code>, <code>patch</code>, <code>delete</code>.</p>
+<h2 id="url">URL</h2>
+<p>The URL will be computed from:</p>
+<ul>
+<li>The <code>url</code> attribute of the <code>HTTPAdapterSpec</code> of each client</li>
+<li>The <code>url</code> argument passed to the <code>request</code> method (or <code>get</code>, <code>post</code>, etc.)</li>
+</ul>
+<p>The rules used for combining URLs are quite flexible, and allow for the most frequent
+use cases:</p>
+<ul>
+<li>Appending to the URL (a <code>/</code> separator will be used)</li>
+<li>Keeping only the base URL by using an absolute path (starting with <code>/</code>)</li>
+<li>Replacing the URL entirely by specifying an other URL</li>
+</ul>
+<h2 id="body">Body</h2>
+<p>The <code>body</code> and <code>body_encoding</code> decide the data that will be sent in the body of the
+request.</p>
+<p>Here are the possible values for <code>body_encoding</code>:</p>
+<dl>
+<dt><code>HTTPBodyEncoding.AUTO</code></dt>
+<dd>
+<p>Some heuristics are used to determine which encoding to use.</p>
+</dd>
+<dt><code>HTTPBodyEncoding.NONE</code></dt>
+<dd>
+<p>Only basic types such as <code>bytes</code> and <code>str</code> are allowed, and will be passed
+transparently.</p>
+</dd>
+<dt><code>HTTPBodyEncoding.JSON</code></dt>
+<dd>
+<p>Data will be JSON-encoded.</p>
+</dd>
+<dt><code>HTTPBodyEncoding.URLENCODE</code></dt>
+<dd>
+<p>Only works for <code>dict</code> types; keys and values will be urlencoded like a query string.</p>
+</dd>
+<dt><code>HTTPBodyEncoding.MULTIPART</code></dt>
+<dd>
+<p>Only works for <code>dict</code> types; all values are encoded as if they were file data.</p>
+</dd>
+</dl>
+<h2 id="headers">Headers</h2>
+<p>The headers will be computed from:</p>
+<ul>
+<li>The <code>headers</code> attribute of the <code>HTTPAdapterSpec</code> of each client</li>
+<li>The <code>headers</code> argument passed to the <code>request</code> method (or <code>get</code>, <code>post</code>, etc.)</li>
+</ul>
+<p>The later values override the former ones, in a case-insensitive manner.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Depending on the <code>body_encoding</code> value, a <code>content-type</code> header may be automatically
+added.</p>
+</div>
+<h2 id="stream-mode">Stream mode</h2>
+<p>To ask the server to stream the response, set the <code>stream_response</code> parameter to <code>True</code>.</p>
+<p>It is then recommended to use the <code>data_stream</code> attribute of
+<a href="../http_response/">the response object</a>.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../typing/" class="btn btn-neutral float-left" title="Typing"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../http_response/" class="btn btn-neutral float-right" title="Response">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/rogdham/sdkite" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../typing/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../http_response/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

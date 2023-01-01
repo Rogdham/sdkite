@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Rogdham" /><link rel="canonical" href="https://sdkite.rogdham.net/http_auth/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Authentication - SDKite</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../css/extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Authentication";
+        var mkdocs_page_input_path = "http_auth.md";
+        var mkdocs_page_url = "/http_auth/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> SDKite
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User guide</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pagination/">Pagination</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../typing/">Typing</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">HTTP client</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../http_request/">Request</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../http_response/">Response</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Authentication</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#basic-authentication">Basic authentication</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#removing-authentication">Removing authentication</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">External Links</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="https://github.com/rogdham/sdkite/blob/master/CHANGELOG.md">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/rogdham/sdkite/issues">Issue tracker</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/rogdham/sdkite">SDKite @ GitHub</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://pypi.org/project/sdkite">SDKite @ PyPI</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">SDKite</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>HTTP client &raquo;</li>
+      <li>Authentication</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/rogdham/sdkite/blob/master/docs/src/http_auth.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="http-authentication">HTTP authentication</h1>
+<p>Helpers are provided to manage the common schemes of HTTP authentications.</p>
+<p>They take the <code>HTTPAdapterSpec</code> instance as first argument. Internally, they register an
+interceptor <!-- FIXME link --> that will add the required <code>Authorization</code> header.</p>
+<h2 id="basic-authentication">Basic authentication</h2>
+<p>The <code>BasicAuth</code> helper takes to optional arguments <code>username</code> and <code>password</code>:</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; from sdkite.http import BasicAuth, HTTPAdapterSpec
+
+&gt;&gt;&gt; class RootClient(Client):
+...     _http = HTTPAdapterSpec(url=&quot;https://api.example.com/&quot;)
+...     _auth = BasicAuth(_http, &quot;Alice&quot;, &quot;W0nderl@nd&quot;)
+...
+...     def whoami(self):
+...         return self._http.get('whoami').data_str
+
+&gt;&gt;&gt; RootClient().whoami()
+'Welcome Alice!'
+</code></pre>
+
+<p>The values can also be set at runtime by modifying the corresponding attributes of the
+instance:</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; class RootClient(Client):
+...     _http = HTTPAdapterSpec(url=&quot;https://api.example.com/&quot;)
+...     _auth = BasicAuth(_http)
+...
+...     def __init__(self, username, password):
+...         super().__init__()
+...         self._auth.username = username
+...         self._auth.password = password
+...
+...     def whoami(self):
+...         return self._http.get('whoami').data_str
+
+&gt;&gt;&gt; RootClient('Alice', 'W0nderl@nd').whoami()
+'Welcome Alice!'
+</code></pre>
+
+<h2 id="removing-authentication">Removing authentication</h2>
+<p>If you have defined some authentication on a client, you can remove it on sub-clients by
+using <code>NoAuth</code>:</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; from sdkite.http import NoAuth
+
+&gt;&gt;&gt; class ChildClient(Client):
+...     _http = HTTPAdapterSpec()
+...     _auth = NoAuth(_http)
+...
+...     def example(self):
+...         return self._http.get('noauth').data_str
+
+&gt;&gt;&gt; class RootClient(Client):
+...     _http = HTTPAdapterSpec(url=&quot;https://api.example.com/&quot;)
+...     _auth = BasicAuth(_http, &quot;user&quot;, &quot;password&quot;)
+...     child: ChildClient
+
+&gt;&gt;&gt; RootClient().child.example()  # will not add basic auth
+'The /noauth endpoint has been called without auth'
+</code></pre>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The name of the class attribute (<code>_auth</code> in the example) must be the same in both clients, otherwise the authentication is not overridden.</p>
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../http_response/" class="btn btn-neutral float-left" title="Response"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/rogdham/sdkite" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../http_response/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
