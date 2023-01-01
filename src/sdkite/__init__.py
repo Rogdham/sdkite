@@ -9,10 +9,14 @@ except ImportError:  # pragma: no cover
 
 
 __all__ = (
+    # sdkite._version
     "__version__",
+    # sdkite.adapter
     "Adapter",
     "AdapterSpec",
+    # sdkite.client
     "Client",
-    "paginated",
+    # sdkite.pagination
     "Pagination",
+    "paginated",
 )

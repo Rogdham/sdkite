@@ -8,12 +8,15 @@ from sdkite.http.model import (
 )
 
 __all__ = (
-    "BasicAuth",
+    # sdkite.http.adapter
     "HTTPAdapter",
     "HTTPAdapterSpec",
+    # sdkite.http.auth
+    "BasicAuth",
+    "NoAuth",
+    # sdkite.http.model
     "HTTPBodyEncoding",
     "HTTPHeaderDict",
     "HTTPRequest",
     "HTTPResponse",
-    "NoAuth",
 )
