@@ -4,7 +4,7 @@
 
 A simple framework for building SDKs and API clients
 
-[![GitHub build status](https://img.shields.io/github/workflow/status/rogdham/sdkite/build/master)](https://github.com/rogdham/sdkite/actions?query=branch:master)
+[![GitHub build status](https://img.shields.io/github/actions/workflow/status/rogdham/sdkite/build.yml?branch=master)](https://github.com/rogdham/sdkite/actions?query=branch:master)
 [![Release on PyPI](https://img.shields.io/pypi/v/sdkite)](https://pypi.org/project/sdkite/)
 [![Code coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/rogdham/sdkite/search?q=fail+under&type=Code)
 [![Mypy type checker](https://img.shields.io/badge/type_checker-mypy-informational)](https://mypy.readthedocs.io/)

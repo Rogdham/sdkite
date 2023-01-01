@@ -25,6 +25,7 @@ adheres to [Semantic Versioning](https://semver.org/).
 ### :house: Internal
 
 - Necessary code changes following dev dependency update: mypy
+- Fix a badge shield URL in readme
 
 ## [0.1.0] - 2020-10-31
 
