@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, TypeVar
 import warnings
 
 from sdkite import Adapter, AdapterSpec
-from sdkite.http.impl_requests import RequestsImpl
+from sdkite.http.engine_requests import HTTPEngineRequests
 from sdkite.http.model import (
     HTTPBodyEncoding,
     HTTPHeaderDict,
@@ -176,8 +176,8 @@ class HTTPAdapterSpec(AdapterSpec[HTTPAdapter]):
         self.response_interceptor: Dict[str, int] = {}
 
     def _create_adapter(self) -> HTTPAdapter:
-        # for now we force an implementation based on 'requests'
-        send_request = RequestsImpl()
+        # defaults to engine based on 'requests'
+        send_request = HTTPEngineRequests()
         return HTTPAdapter(send_request)
 
     def register_interceptor(

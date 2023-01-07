@@ -51,9 +51,9 @@ class FakeResponse(HTTPResponse):
 
 @pytest.fixture(autouse=True)
 def patched_adapter(monkeypatch: pytest.MonkeyPatch) -> None:
-    impl = Mock()
-    impl.return_value = lambda request: FakeResponse("send_request", request)
-    monkeypatch.setattr(adapter_module, "RequestsImpl", impl)
+    engine = Mock()
+    engine.return_value = lambda request: FakeResponse("send_request", request)
+    monkeypatch.setattr(adapter_module, "HTTPEngineRequests", engine)
 
 
 def test_no_interceptor() -> None:

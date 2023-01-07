@@ -9,6 +9,10 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 [unreleased]: https://github.com/rogdham/sdkite/compare/v0.2.0...HEAD
 
+### :house: Internal
+
+- Rename HTTP “impl” into “engine”
+
 ## [0.2.0] - 2023-01-01
 
 [0.2.0]: https://github.com/rogdham/sdkite/compare/v0.1.0...v0.2.0

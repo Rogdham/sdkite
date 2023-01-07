@@ -2,10 +2,10 @@ from requests import Response
 from requests_mock import Mocker
 
 from sdkite.http import HTTPHeaderDict, HTTPRequest, HTTPResponse
-from sdkite.http.impl_requests import RequestsImpl, RequestsResponse
+from sdkite.http.engine_requests import HTTPEngineRequests, HTTPResponseRequests
 
 
-def test_requests_impl(requests_mock: Mocker) -> None:
+def test_requests_engine(requests_mock: Mocker) -> None:
     requests_mock.register_uri(
         # request
         "POST",
@@ -17,8 +17,8 @@ def test_requests_impl(requests_mock: Mocker) -> None:
         headers={"X-Bar": "Xyz"},
     )
 
-    impl = RequestsImpl()
-    response = impl(
+    engine = HTTPEngineRequests()
+    response = engine(
         HTTPRequest(
             method="POST",
             url="https://www.example.com/foo/bar",
@@ -39,7 +39,7 @@ def test_requests_impl(requests_mock: Mocker) -> None:
     assert not request.allow_redirects
 
     assert isinstance(response, HTTPResponse)
-    assert isinstance(response, RequestsResponse)
+    assert isinstance(response, HTTPResponseRequests)
     assert isinstance(response.raw, Response)
     assert response.status_code == 200
     assert response.reason == "OK"
@@ -57,7 +57,7 @@ def test_requests_impl(requests_mock: Mocker) -> None:
     assert response.data_json == {"hello": "world", "aaa": "bbb"}
 
 
-def test_request_impl_custom_ua(requests_mock: Mocker) -> None:
+def test_request_engine_custom_ua(requests_mock: Mocker) -> None:
     requests_mock.register_uri(
         # request
         "GET",
@@ -65,8 +65,8 @@ def test_request_impl_custom_ua(requests_mock: Mocker) -> None:
         request_headers={"User-Agent": "Custom"},
     )
 
-    impl = RequestsImpl()
-    impl(
+    engine = HTTPEngineRequests()
+    engine(
         HTTPRequest(
             method="GET",
             url="https://www.example.com/foo/bar",

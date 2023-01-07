@@ -16,7 +16,7 @@ else:  # pragma: no cover
     from collections.abc import Iterator
 
 
-class RequestsResponse(HTTPResponse):
+class HTTPResponseRequests(HTTPResponse):
     def __init__(self, response: Response):
         self._response = response
 
@@ -53,7 +53,7 @@ class RequestsResponse(HTTPResponse):
         return self._response.json()
 
 
-class RequestsImpl:
+class HTTPEngineRequests:
     def __init__(self) -> None:
         self.session = Session()
 
@@ -74,4 +74,4 @@ class RequestsImpl:
             allow_redirects=False,
         )
 
-        return RequestsResponse(response)
+        return HTTPResponseRequests(response)
