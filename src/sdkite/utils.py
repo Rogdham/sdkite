@@ -11,6 +11,10 @@ T = TypeVar("T")
 U = TypeVar("U")
 
 
+def identity(value: T) -> T:
+    return value
+
+
 def zip_reverse(items_a: Sequence[T], items_b: Sequence[U]) -> Iterable[Tuple[T, U]]:
     if len(items_a) != len(items_b):
         # in Python >= 3.10 we could use zip(..., strict=True)

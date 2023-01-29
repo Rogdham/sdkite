@@ -1,15 +1,21 @@
+from pathlib import Path
 import sys
-from typing import List, cast
+from typing import Any, List, cast
 
+import pytest
 from requests_mock import Mocker
 
 from sdkite import Client, Pagination, paginated
-from sdkite.http import BasicAuth, HTTPAdapterSpec, NoAuth
+from sdkite.http import BasicAuth, HTTPAdapterSpec, HTTPRequest, NoAuth
+from sdkite.http.engine_replay import HTTPEngineReplay, HTTPResponseReplay
 
 if sys.version_info < (3, 8):  # pragma: no cover
     from typing_extensions import TypedDict
 else:  # pragma: no cover
     from typing import TypedDict
+
+
+REPLAY_PATH = Path(__file__).parent / "recorded"
 
 
 class ApiPublic(Client):
@@ -52,38 +58,141 @@ class Api(Client):
         self._auth.password = password
 
 
-def test_http(requests_mock: Mocker) -> None:
+@pytest.fixture
+def mock_http_requests(requests_mock: Mocker) -> None:
+    common_response: Any = {
+        "reason": "OK",
+        "headers": {"server": "nginx"},
+    }
+
     requests_mock.register_uri(
+        # request
         "GET",
         "https://www.example.com/api/v1/public/version",
         additional_matcher=lambda request: "Authorization" not in request.headers,
+        # response
         content=b"1.2.3",
+        **common_response,
     )
 
     requests_mock.register_uri(
+        # request
         "GET",
         "https://www.example.com/api/v1/users/1337",
         request_headers={"authorization": "Basic dGVzdHM6czNjcjN0"},
+        # response
         content=b'{"name":"John Doe","age":42}',
+        **common_response,
     )
 
     requests_mock.register_uri(
+        # request
         "GET",
         "https://www.example.com/api/v1/users/all/1",
         request_headers={"authorization": "Basic dGVzdHM6czNjcjN0"},
+        # response
         content=b'[{"name":"John Doe","age":42},{"name":"Alice Doe","age":41}]',
+        **common_response,
     )
     requests_mock.register_uri(
+        # request
         "GET",
         "https://www.example.com/api/v1/users/all/2",
         request_headers={"authorization": "Basic dGVzdHM6czNjcjN0"},
+        # response
         content=b'[{"name":"Bob Doe","age":10},{"name":"Carole Doe","age":12}]',
+        **common_response,
     )
     requests_mock.register_uri(
+        # request
         "GET",
         "https://www.example.com/api/v1/users/all/3",
         request_headers={"authorization": "Basic dGVzdHM6czNjcjN0"},
+        # response
         content=b"[]",
+        **common_response,
+    )
+
+
+def test_http(
+    mock_http_requests: object,  # pylint: disable=redefined-outer-name,unused-argument
+) -> None:
+    client = Api("https://www.example.com/api/v1", "s3cr3t")
+
+    assert client.public.version() == "1.2.3"
+
+    user = client.users.get(1337)
+    assert user == User(name="John Doe", age=42)
+
+    users = list(client.users.get_all())
+    assert users == [
+        User(name="John Doe", age=42),
+        User(name="Alice Doe", age=41),
+        User(name="Bob Doe", age=10),
+        User(name="Carole Doe", age=12),
+    ]
+
+
+def replay_request_modifier(request: HTTPRequest) -> HTTPRequest:
+    if "Authorization" in request.headers:
+        request.headers["Authorization"] = "Basic redacted"
+    return request
+
+
+def test_http_replay_replay(
+    # notice how we don't use `mock_http_requests` here
+    # still patching requests just in case
+    requests_mock: Mocker,  # pylint: disable=unused-argument
+) -> None:
+    Api._http.set_engine(  # pylint: disable=protected-access
+        HTTPEngineReplay,
+        [REPLAY_PATH],
+        replay_request_modifier=replay_request_modifier,
+    )
+
+    client = Api(
+        "https://www.example.com/api/v1",
+        "whatever",  # password is ignored
+    )
+
+    assert client.public.version() == "1.2.3"
+
+    user = client.users.get(1337)
+    assert user == User(name="John Doe", age=42)
+
+    users = list(client.users.get_all())
+    assert users == [
+        User(name="John Doe", age=42),
+        User(name="Alice Doe", age=41),
+        User(name="Bob Doe", age=10),
+        User(name="Carole Doe", age=12),
+    ]
+
+
+def test_http_replay_record(
+    mock_http_requests: object,  # pylint: disable=redefined-outer-name,unused-argument
+    tmp_path: Path,
+) -> None:
+    def recording_response_modifier(response: HTTPResponseReplay) -> HTTPResponseReplay:
+        return response.replace(
+            headers={
+                **response.headers,
+                "server": "apache",
+            }
+        )
+
+    def recording_compute_basename(request: HTTPRequest, _: HTTPResponseReplay) -> str:
+        prefix = "https://www.example.com/api/v1/"
+        assert request.url.startswith(prefix)
+        return request.url[len(prefix) :].replace("/", "_")
+
+    Api._http.set_engine(  # pylint: disable=protected-access
+        HTTPEngineReplay,
+        [tmp_path],
+        recording=True,
+        replay_request_modifier=replay_request_modifier,
+        recording_response_modifier=recording_response_modifier,
+        recording_compute_basename=recording_compute_basename,
     )
 
     client = Api("https://www.example.com/api/v1", "s3cr3t")
@@ -100,3 +209,11 @@ def test_http(requests_mock: Mocker) -> None:
         User(name="Bob Doe", age=10),
         User(name="Carole Doe", age=12),
     ]
+
+    expected_paths = {path.relative_to(REPLAY_PATH) for path in REPLAY_PATH.rglob("*")}
+    assert {
+        path.relative_to(tmp_path) for path in tmp_path.rglob("*")
+    } == expected_paths
+
+    for path in expected_paths:
+        assert (tmp_path / path).read_bytes() == (REPLAY_PATH / path).read_bytes(), path

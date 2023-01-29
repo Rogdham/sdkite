@@ -12,6 +12,7 @@ adheres to [Semantic Versioning](https://semver.org/).
 ### :rocket: Added
 
 - Allow to select HTTP engine with `HTTPAdapterSpec.set_engine`
+- Add HTTP replay engine to be able to record/replay HTTP responses
 
 ### :house: Internal
 

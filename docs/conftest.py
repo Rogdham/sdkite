@@ -101,6 +101,29 @@ def patch_http(requests_mock: Mocker) -> None:
 
 
 @pytest.fixture(autouse=True)
+def create_replay_store(tmp_path: Path) -> None:
+    store = tmp_path / "replay"
+    store.mkdir()
+    (store / "ping.json").write_bytes(
+        rb"""{
+  "request": {
+    "method": "GET",
+    "url": "https://api.example.com/ping",
+    "headers": {},
+    "body": ""
+  },
+  "response": {
+    "status_code": 200,
+    "reason": "OK",
+    "headers": {},
+    "body": "pong"
+  }
+}
+"""
+    )
+
+
+@pytest.fixture(autouse=True)
 def change_directory(tmp_path: Path) -> Iterator[None]:
     cwd = getcwd()
     try:

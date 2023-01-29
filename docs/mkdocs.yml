@@ -18,6 +18,7 @@ nav:
       - Response: http_response.md
       - Authentication: http_auth.md
       - Engine: http_engine.md
+      - Record & replay: http_replay.md
       # - Interceptors: fixme.md
       # - Exceptions: fixme.md
   - External Links:

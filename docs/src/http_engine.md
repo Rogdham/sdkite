@@ -3,8 +3,12 @@
 The HTTP engine is the responsible for taking an `HTTPRequest` and returning the
 response as an `HTTPResponse` object.
 
-Only the `HTTPEngineRequests` based on the [requests](https://github.com/psf/requests)
-library is provided.
+The following engines are provided:
+
+- `HTTPEngineRequests` based on the [requests](https://github.com/psf/requests); this
+  engine is chosen by default
+- `HTTPEngineReplay` to be able to record and replay requests
+  ([more info](http_replay.md))
 
 ## Changing the engine
 

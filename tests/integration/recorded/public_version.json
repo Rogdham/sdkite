@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://www.example.com/api/v1/public/version",
+    "headers": {},
+    "body": ""
+  },
+  "response": {
+    "status_code": 200,
+    "reason": "OK",
+    "headers": {
+      "server": "apache"
+    },
+    "body": [
+      "1.2.3"
+    ]
+  }
+}

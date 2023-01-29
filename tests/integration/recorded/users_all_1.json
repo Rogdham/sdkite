@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://www.example.com/api/v1/users/all/1",
+    "headers": {
+      "X-Toto": "Abc",
+      "Authorization": "Basic redacted"
+    },
+    "body": ""
+  },
+  "response": {
+    "status_code": 200,
+    "reason": "OK",
+    "headers": {
+      "server": "apache"
+    },
+    "body": [
+      "[{\"name\":\"John Doe\",\"age\":42},{\"name\":\"Alice Doe\",\"age\":41}]"
+    ]
+  }
+}

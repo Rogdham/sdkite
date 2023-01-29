@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://example.com/foo",
+    "headers": {},
+    "body": ""
+  },
+  "response": {
+    "status_code": 200,
+    "reason": "OK",
+    "headers": {
+      "server": "nginx"
+    },
+    "body": ["{\"msg\":", " 37}"]
+  }
+}
