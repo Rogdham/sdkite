@@ -9,6 +9,10 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 [unreleased]: https://github.com/rogdham/sdkite/compare/v0.2.0...HEAD
 
+### :rocket: Added
+
+- Allow to select HTTP engine with `HTTPAdapterSpec.set_engine`
+
 ### :house: Internal
 
 - Rename HTTP “impl” into “engine”

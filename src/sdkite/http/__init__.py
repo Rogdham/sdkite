@@ -1,4 +1,4 @@
-from sdkite.http.adapter import HTTPAdapter, HTTPAdapterSpec
+from sdkite.http.adapter import HTTPAdapter, HTTPAdapterSendRequest, HTTPAdapterSpec
 from sdkite.http.auth import BasicAuth, NoAuth
 from sdkite.http.model import (
     HTTPBodyEncoding,
@@ -10,6 +10,7 @@ from sdkite.http.model import (
 __all__ = (
     # sdkite.http.adapter
     "HTTPAdapter",
+    "HTTPAdapterSendRequest",
     "HTTPAdapterSpec",
     # sdkite.http.auth
     "BasicAuth",

@@ -6,6 +6,7 @@ import pytest
 
 from sdkite.http import (
     HTTPAdapter,
+    HTTPAdapterSendRequest,
     HTTPAdapterSpec,
     HTTPBodyEncoding,
     HTTPHeaderDict,
@@ -279,5 +280,42 @@ def test_register_interceptor_existing() -> None:
                 body=b"",
                 stream_response=False,
             ),
+        ),
+    )
+
+
+def test_custom_engine() -> None:
+    def custom_engine(param0: int, *, param1: int) -> HTTPAdapterSendRequest:
+        def send_request(request: HTTPRequest) -> HTTPResponse:
+            return FakeResponse(f"engine-{param0}-{param1}", request)
+
+        return send_request
+
+    class Klass(Client):
+        _parent = None
+
+        xxx = HTTPAdapterSpec(url="https://www.example.com/xxx")
+
+    with pytest.raises(TypeError):
+        Klass.xxx.set_engine(custom_engine)  # type: ignore[call-arg]
+    with pytest.raises(TypeError):
+        Klass.xxx.set_engine(custom_engine, 42)  # type: ignore[call-arg]
+    with pytest.raises(TypeError):
+        Klass.xxx.set_engine(custom_engine, 42, 1337)  # type: ignore[misc]
+    with pytest.raises(TypeError):
+        Klass.xxx.set_engine(custom_engine, param1=1337)  # type: ignore[call-arg]
+
+    Klass.xxx.set_engine(custom_engine, 42, param1=1337)
+
+    client = Klass()
+    response = client.xxx.request("GET", "uvw")
+    assert response == FakeResponse(
+        "engine-42-1337",
+        HTTPRequest(
+            method="GET",
+            url="https://www.example.com/xxx/uvw",
+            headers=HTTPHeaderDict(),
+            body=b"",
+            stream_response=False,
         ),
     )

@@ -1,4 +1,5 @@
 from functools import partial
+from inspect import BoundArguments, signature
 import sys
 from typing import Any, Dict, List, Optional, Set, Tuple, TypeVar
 import warnings
@@ -32,6 +33,8 @@ else:  # pragma: no cover
 
 P = ParamSpec("P")
 T = TypeVar("T")
+
+HTTPAdapterSendRequest = Callable[[HTTPRequest], HTTPResponse]
 
 
 class _HTTPAdapterRequestWithoutMethodReturn(Protocol):
@@ -165,6 +168,9 @@ class HTTPAdapter(Adapter):
 
 
 class HTTPAdapterSpec(AdapterSpec[HTTPAdapter]):
+    _engine_callable: Callable[..., HTTPAdapterSendRequest]
+    _engine_arguments: BoundArguments
+
     def __init__(
         self,
         url: Optional[str] = None,
@@ -175,9 +181,24 @@ class HTTPAdapterSpec(AdapterSpec[HTTPAdapter]):
         self.request_interceptor: Dict[str, int] = {}
         self.response_interceptor: Dict[str, int] = {}
 
-    def _create_adapter(self) -> HTTPAdapter:
         # defaults to engine based on 'requests'
-        send_request = HTTPEngineRequests()
+        self.set_engine(HTTPEngineRequests)
+
+    def set_engine(
+        self,
+        engine_callable: Callable[P, HTTPAdapterSendRequest],
+        *engine_args: P.args,
+        **engine_kwargs: P.kwargs,
+    ) -> None:
+        arguments = signature(engine_callable).bind(*engine_args, **engine_kwargs)
+        self._engine_callable = engine_callable
+        self._engine_arguments = arguments
+
+    def _create_adapter(self) -> HTTPAdapter:
+        send_request = self._engine_callable(
+            *self._engine_arguments.args,
+            **self._engine_arguments.kwargs,
+        )
         return HTTPAdapter(send_request)
 
     def register_interceptor(

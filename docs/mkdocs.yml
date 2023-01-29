@@ -17,6 +17,7 @@ nav:
       - Request: http_request.md
       - Response: http_response.md
       - Authentication: http_auth.md
+      - Engine: http_engine.md
       # - Interceptors: fixme.md
       # - Exceptions: fixme.md
   - External Links:

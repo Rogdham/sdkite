@@ -6,6 +6,7 @@ import pytest
 from requests_mock import Mocker
 
 from sdkite import Client
+from sdkite.http import HTTPRequest, HTTPResponse
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -44,8 +45,16 @@ def import_pytest(doctest_namespace: Dict[str, object]) -> None:
         index = cursors.index(cursor)
         return list_spells(max_price, page=index), cursors[index + 1]
 
+    class ExampleEngine:
+        def __init__(self, *_: object, **__: object) -> None:
+            pass
+
+        def __call__(self, request: HTTPRequest) -> HTTPResponse:
+            raise NotImplementedError
+
     doctest_namespace["list_spells"] = list_spells
     doctest_namespace["list_spells_with_ref"] = list_spells_with_ref
+    doctest_namespace["ExampleEngine"] = ExampleEngine
 
 
 @pytest.fixture(autouse=True)
