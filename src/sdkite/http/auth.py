@@ -1,14 +1,16 @@
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from copy import deepcopy
-from typing import Any, TypeVar, cast
+import sys
+from typing import Any, cast
 
 from sdkite.http.adapter import HTTPAdapter, HTTPAdapterSpec
 from sdkite.http.model import HTTPRequest
 
-# until mypy has support for Self type
-# see https://github.com/python/mypy/issues/11871
-_AuthSelf = TypeVar("_AuthSelf", bound="Auth")
+if sys.version_info < (3, 11):  # pragma: no cover
+    from typing_extensions import Self
+else:  # pragma: no cover
+    from typing import Self
 
 
 class Auth(ABC):
@@ -29,7 +31,7 @@ class Auth(ABC):
             "request_interceptor", self.name, self._interceptor_order
         )
 
-    def __get__(self: _AuthSelf, instance: Any, __: Any) -> _AuthSelf:
+    def __get__(self, instance: Any, __: Any) -> Self:
         if instance is None:
             return self
         attr_name = f"_sdkite_auth_{self.name}"
@@ -38,7 +40,7 @@ class Auth(ABC):
         except AttributeError:
             instance_auth = deepcopy(self)
             setattr(instance, attr_name, instance_auth)
-        return cast(_AuthSelf, instance_auth)
+        return cast(Self, instance_auth)
 
     @abstractmethod
     def __call__(self, request: HTTPRequest, _: HTTPAdapter) -> HTTPRequest:

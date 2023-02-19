@@ -17,6 +17,8 @@ adheres to [Semantic Versioning](https://semver.org/).
 ### :house: Internal
 
 - Rename HTTP “impl” into “engine”
+- Upgrade `typing-extensions` dependency
+- Necessary code changes following dev dependency update: mypy
 
 ## [0.2.0] - 2023-01-01
 

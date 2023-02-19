@@ -18,13 +18,12 @@ from typing import (
 
 from sdkite.client import Client
 
+if sys.version_info < (3, 11):  # pragma: no cover
+    from typing_extensions import Self
+else:  # pragma: no cover
+    from typing import Self
+
 A = TypeVar("A")
-
-
-# until mypy has support for Self type
-# see https://github.com/python/mypy/issues/11871
-_AdapterSelf = TypeVar("_AdapterSelf", bound="Adapter")
-_AdapterSpecSelf = TypeVar("_AdapterSpecSelf", bound="AdapterSpec[Any]")
 
 
 class Adapter:
@@ -32,7 +31,7 @@ class Adapter:
     _clients: Tuple[Client, ...]
 
     @property
-    def _adapters(self: _AdapterSelf) -> Tuple[_AdapterSelf, ...]:
+    def _adapters(self) -> Tuple[Self, ...]:
         return tuple(getattr(client, self._attr_name) for client in self._clients)
 
 
@@ -95,16 +94,14 @@ class AdapterSpec(Generic[A], ABC):
         self._attr_name = name
 
     @overload
-    def __get__(self: _AdapterSpecSelf, client: None, _: Any) -> _AdapterSpecSelf:
+    def __get__(self, client: None, _: Any) -> Self:
         ...
 
     @overload
     def __get__(self, client: Client, _: Any) -> A:
         ...
 
-    def __get__(
-        self: _AdapterSpecSelf, client: Optional[Client], _: Any
-    ) -> Union[_AdapterSpecSelf, A]:
+    def __get__(self, client: Optional[Client], _: Any) -> Union[Self, A]:
         if client is None:
             return self
 
