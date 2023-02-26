@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Rogdham" /><link rel="canonical" href="https://sdkite.rogdham.net/typing/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Rogdham" /><link rel="canonical" href="https://sdkite.rogdham.net/http_replay/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Typing - SDKite</title>
+    <title>Record & replay - SDKite</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
@@ -13,9 +13,9 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Typing";
-        var mkdocs_page_input_path = "typing.md";
-        var mkdocs_page_url = "/typing/";
+        var mkdocs_page_name = "Record \u0026 replay";
+        var mkdocs_page_input_path = "http_replay.md";
+        var mkdocs_page_url = "/http_replay/";
       </script>
     
     <script src="../js/jquery-3.6.0.min.js" defer></script>
@@ -46,18 +46,16 @@
                 </li>
               </ul>
               <p class="caption"><span class="caption-text">User guide</span></p>
-              <ul class="current">
+              <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../pagination/">Pagination</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Typing</a>
-    <ul class="current">
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../typing/">Typing</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">HTTP client</span></p>
-              <ul>
+              <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../http_request/">Request</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../http_response/">Response</a>
@@ -66,7 +64,13 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../http_engine/">Engine</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../http_replay/">Record & replay</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Record & replay</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#engine-parameters">Engine parameters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example">Example</a>
+    </li>
+    </ul>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">External Links</span></p>
@@ -94,10 +98,10 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>User guide &raquo;</li>
-      <li>Typing</li>
+          <li>HTTP client &raquo;</li>
+      <li>Record & replay</li>
     <li class="wy-breadcrumbs-aside">
-          <a href="https://github.com/rogdham/sdkite/blob/master/docs/src/typing.md" class="icon icon-github"> Edit on GitHub</a>
+          <a href="https://github.com/rogdham/sdkite/blob/master/docs/src/http_replay.md" class="icon icon-github"> Edit on GitHub</a>
     </li>
   </ul>
   <hr/>
@@ -105,22 +109,77 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="typing">Typing</h1>
-<p><em>SDKite</em> commes natively with type hints, which are checked by <a href="https://mypy.readthedocs.io/en/stable/index.html"><em>mypy</em></a>.</p>
-<p>The benefits are twofold:</p>
-<ul>
-<li>Improve the correctness of the code of the library itself;</li>
-<li>Allow users of the library to benefit from well-defined type hints on the public API.</li>
-</ul>
-<p>As a rule of thumbs, we follow <a href="https://en.wikipedia.org/wiki/Robustness_principle">Postel's law</a> by being as vague as possible
-for the arguments of functions, and as precise as possible for the returned values.</p>
-<!-- FIXME add examples -->
+                <h1 id="http-replay-engine">HTTP replay engine</h1>
+<p>Record and replay the HTTP interactions by setting the <a href="../http_engine/">HTTP engine</a> to
+<code>HTTPEngineReplay</code>. This is useful for fast and deterministic tests.</p>
+<p>Inspired by <a href="https://github.com/myronmarston/vcr">VCR</a> for Ruby and the similar projects
+for Python.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This feature is experimental, and the format in which records are saved on disk is subject to change in future versions.</p>
+</div>
+<h2 id="engine-parameters">Engine parameters</h2>
+<dl>
+<dt><code>paths</code></dt>
+<dd>
+<p>An iterable of <code>Path</code>s to specify the record stores. If a request matches a record
+from several paths, the last one will be used.</p>
+</dd>
+<dt><code>recording</code> (optional)</dt>
+<dd>
+<p>A <code>bool</code> telling wether real HTTP requests will be send (and saved) instead of loaded
+from an existing record. Otherwise, no HTTP requests will be sent at all, and exceptions
+will be raised if no matching requests are found in the record store.</p>
+</dd>
+<dt><code>replay_request_modifier</code> (optional)</dt>
+<dd>
+<p>Allow to modify the request before looking it up in the record store.</p>
+</dd>
+<dt><code>replay_response_modifier</code> (optional)</dt>
+<dd>
+<p>Allow to modify the response after retrieving it from the record store.</p>
+</dd>
+<dt><code>recording_request_modifier</code> (optional)</dt>
+<dd>
+<p>Allow to modify the request before sending the HTTP interaction for real. Only used in
+recording mode. Note that the argument has not been modified by
+<code>replay_request_modifier</code>.</p>
+</dd>
+<dt><code>recording_response_modifier</code> (optional)</dt>
+<dd>
+<p>Allow to modify the response received from a real HTTP interaction before saving it to
+the record store. Only used in recording mode. Note that after being saved, the returned
+value will then pass through <code>replay_response_modifier</code> before being sent to the caller.</p>
+</dd>
+<dt><code>recording_compute_basename</code> (optional)</dt>
+<dd>
+<p>Allow to compute the base name of the record file to be saved. A <code>.json</code> extension
+will be appended to the returned value. Only used in recording mode.</p>
+</dd>
+</dl>
+<h2 id="example">Example</h2>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; from sdkite import Client
+&gt;&gt;&gt; from sdkite.http import HTTPAdapterSpec
+&gt;&gt;&gt; from sdkite.http.engine_replay import HTTPEngineReplay
+
+&gt;&gt;&gt; class TableTennis(Client):
+...     _http = HTTPAdapterSpec(&quot;https://api.example.com/&quot;)
+...
+...     def ping(self):
+...         return self._http.get(&quot;ping&quot;).data_str
+
+&gt;&gt;&gt; TableTennis._http.set_engine(HTTPEngineReplay, [Path(&quot;replay&quot;)])
+
+&gt;&gt;&gt; table_tennis = TableTennis()
+
+&gt;&gt;&gt; table_tennis.ping()
+'pong'
+</code></pre>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../pagination/" class="btn btn-neutral float-left" title="Pagination"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../http_request/" class="btn btn-neutral float-right" title="Request">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../http_engine/" class="btn btn-neutral float-left" title="Engine"><span class="icon icon-circle-arrow-left"></span> Previous</a>
     </div>
 
   <hr/>
@@ -147,10 +206,8 @@ for the arguments of functions, and as precise as possible for the returned valu
         </span>
     
     
-      <span><a href="../pagination/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../http_engine/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
-    
-      <span><a href="../http_request/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
