@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.3.0] - 2023-02-26
 
-[unreleased]: https://github.com/rogdham/sdkite/compare/v0.2.0...HEAD
+[0.3.0]: https://github.com/rogdham/sdkite/compare/v0.2.0...v0.3.0
+
+v0.3.0 allows HTTP responses to be recorded to be replayed later
 
 ### :rocket: Added
 
