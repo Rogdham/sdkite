@@ -51,6 +51,24 @@ class HTTPTimeoutError(HTTPError):
     pass
 
 
+class HTTPStatusCodeError(HTTPError):
+    response: "HTTPResponse"
+
+    def __init__(
+        self,
+        *,
+        status_code: int,
+        request: "HTTPRequest",
+        response: Optional["HTTPResponse"],
+    ) -> None:
+        super().__init__(
+            msg=f"Unexpected status code: {status_code}",
+            request=request,
+            response=response,
+        )
+        self.status_code = status_code
+
+
 class HTTPContextError(HTTPError):
     response: "HTTPResponse"
 

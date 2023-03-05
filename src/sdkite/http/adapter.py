@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from functools import partial
 from inspect import BoundArguments, signature
 import sys
-from typing import Any, Dict, List, Optional, Set, Tuple, TypeVar
+from typing import Any, Dict, List, Optional, Set, Tuple, TypeVar, Union
 import warnings
 
 from tenacity import (
@@ -15,6 +15,7 @@ from tenacity import (
 
 from sdkite import Adapter, AdapterSpec
 from sdkite.http.engine_requests import HTTPEngineRequests
+from sdkite.http.exceptions import HTTPStatusCodeError
 from sdkite.http.model import (
     HTTPBodyEncoding,
     HTTPHeaderDict,
@@ -22,7 +23,7 @@ from sdkite.http.model import (
     HTTPRequestAttemptInfo,
     HTTPResponse,
 )
-from sdkite.http.utils import encode_request_body, urlsjoin
+from sdkite.http.utils import build_status_code_check, encode_request_body, urlsjoin
 from sdkite.utils import last_not_none, zip_reverse
 
 if sys.version_info < (3, 8):  # pragma: no cover
@@ -31,9 +32,9 @@ else:  # pragma: no cover
     from typing import Literal, Protocol
 
 if sys.version_info < (3, 9):  # pragma: no cover
-    from typing import Callable, Mapping
+    from typing import Callable, Iterable, Mapping
 else:  # pragma: no cover
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable, Iterable, Mapping
 
 if sys.version_info < (3, 10):  # pragma: no cover
     from typing_extensions import ParamSpec
@@ -62,6 +63,7 @@ class _HTTPAdapterRequestWithoutMethodReturn(Protocol):
         body_encoding: HTTPBodyEncoding = HTTPBodyEncoding.AUTO,
         headers: Optional[Mapping[str, str]] = None,
         stream_response: bool = False,
+        expected_status_codes: Union[int, str, Iterable[Union[int, str]]] = 200,
     ) -> HTTPResponse:
         ...
 
@@ -135,12 +137,15 @@ class HTTPAdapter(Adapter):
         body_encoding: HTTPBodyEncoding = HTTPBodyEncoding.AUTO,
         headers: Optional[Mapping[str, str]] = None,
         stream_response: bool = False,
+        expected_status_codes: Union[int, str, Iterable[Union[int, str]]] = 200,
         retry_nb_attempts: Optional[int] = None,
         retry_callback: Optional[Callable[[HTTPRequestAttemptInfo], None]] = None,
         retry_wait_initial: Optional[float] = None,
         retry_wait_max: Optional[float] = None,
         retry_wait_jitter: Optional[float] = None,
     ) -> HTTPResponse:
+        check_status_code = build_status_code_check(expected_status_codes)
+
         #
         # create request
         #
@@ -232,6 +237,14 @@ class HTTPAdapter(Adapter):
                 # response interceptors
                 for interceptor in self._get_interceptors("response_interceptor"):
                     response = interceptor(response, self)
+
+                # status code check
+                if not check_status_code(response.status_code):
+                    raise HTTPStatusCodeError(
+                        status_code=response.status_code,
+                        request=initial_request,
+                        response=response,
+                    )
 
         response._set_context(  # pylint: disable=protected-access)  # noqa: SLF001
             initial_request

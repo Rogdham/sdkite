@@ -1,18 +1,19 @@
 from contextlib import contextmanager
 from functools import reduce
 import json
+import re
 import secrets
 import sys
-from typing import Optional, Tuple, Union
+from typing import Optional, Set, Tuple, Union
 from urllib.parse import quote_plus
 from urllib.parse import urljoin as _urljoin
 
 from sdkite.http.model import HTTPBodyEncoding
 
 if sys.version_info < (3, 9):  # pragma: no cover
-    from typing import Iterable, Iterator
+    from typing import Callable, Iterable, Iterator
 else:  # pragma: no cover
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Callable, Iterable, Iterator
 
 if sys.version_info < (3, 10):  # pragma: no cover
     NoneType = type(None)
@@ -315,3 +316,32 @@ def encode_request_body(
         raise TypeError(error_msg) from None
 
     return data, content_type
+
+
+_SINGLE_STATUS_CODE_PATTERN = re.compile(r"^[0-9x]{3}$")
+
+
+def build_status_code_check(
+    status_codes: Union[int, str, Iterable[Union[int, str]]]
+) -> Callable[[int], bool]:
+    if isinstance(status_codes, (int, str)):
+        status_codes = (status_codes,)
+
+    parts: Set[str] = set()
+    for status_code in status_codes:
+        if isinstance(status_code, int):
+            status_code = f"{status_code:03d}"  # noqa: PLW2901
+        if _SINGLE_STATUS_CODE_PATTERN.match(status_code):
+            parts.add(status_code.replace("x", "[0-9]"))
+        else:
+            raise ValueError(
+                f"Invalid status code (must match /{_SINGLE_STATUS_CODE_PATTERN.pattern}/)"
+                f": {status_code}"
+            )
+
+    pattern = re.compile(f"^{'|'.join(sorted(parts))}$")
+
+    def status_code_check(code: int) -> bool:
+        return bool(pattern.match(f"{code:03d}"))
+
+    return status_code_check

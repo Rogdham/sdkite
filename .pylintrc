@@ -24,4 +24,5 @@ enable =
 ignore-imports=yes
 
 [TYPECHECK]
+min-similarity-lines=5
 signature-mutators=paginated

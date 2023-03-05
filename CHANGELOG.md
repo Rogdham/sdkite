@@ -11,10 +11,13 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### :boom: Breaking changes
 
+- By default, an exception is raised when an HTTP responses has a non-200 status codes
 - All exceptions raised by HTTP engines are now instances of `HTTPError`
 
 ### :rocket: Added
 
+- Allow to specify expected status codes of HTTP responses with the
+  `expected_status_codes` parameter
 - The response returned by HTTP engines can be used as a context manager; in that case,
   exceptions happening within the context manager are re-raised though
   `HTTPContextError`, which gives the context in which the exception ocurred

@@ -7,6 +7,7 @@ from requests_mock import Mocker
 
 from sdkite import Client
 from sdkite.http import HTTPRequest, HTTPResponse
+import sdkite.http.adapter as adapter_module
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -66,6 +67,11 @@ def _patch_http(requests_mock: Mocker) -> None:
         "GET",
         "https://api.example.com/world/npc/interact?name=ranis",
         text="Have you found the Telvanni spy?",
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://api.example.com/world/npc/interact?name=waldo",
+        status_code=404,
     )
     requests_mock.register_uri(
         "POST",
@@ -145,3 +151,10 @@ def _change_directory(tmp_path: Path) -> Iterator[None]:
         yield
     finally:
         chdir(cwd)
+
+
+@pytest.fixture(autouse=True)
+def _patched_adapter(monkeypatch: pytest.MonkeyPatch) -> None:
+    # change default value for faster tests
+    monkeypatch.setattr(adapter_module, "_DEFAULT_WAIT_INITIAL", 0)
+    monkeypatch.setattr(adapter_module, "_DEFAULT_WAIT_JITTER", 0)

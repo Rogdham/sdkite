@@ -64,6 +64,25 @@ The later values override the former ones, in a case-insensitive manner.
     Depending on the `body_encoding` value, a `content-type` header may be automatically
     added.
 
+## Expected status codes
+
+The `expected_status_codes` parameter allows to specify which status codes are expected
+to be returned in the HTTP response. An `HTTPStatusCodeError` if the value in the
+response is unexpected.
+
+This argument can be:
+
+- An `int` (e.g. `204`)
+- A `str` where the character `x` means “any digit” (e.g. `"2xx"`)
+- An iterable of the previous items (e.g. `("2xx", 404)`)
+
+!!! Warning
+
+    By default, only the `200` status code is considered expected.
+
+    In contrast, other libraries such as [requests](https://github.com/psf/requests)
+    consider only status codes `4xx` and `5xx` to be unexpected.
+
 ## Stream mode
 
 To ask the server to stream the response, set the `stream_response` parameter to `True`.

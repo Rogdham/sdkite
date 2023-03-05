@@ -86,12 +86,20 @@ Notice thee following:
     >>> world.npc.interact("ranis")
     'Have you found the Telvanni spy?'
 
+    >>> world.npc.interact("waldo")
+    Traceback (most recent call last):
+        ...
+    sdkite.http.exceptions.HTTPStatusCodeError: Unexpected status code: 404
+
     >>> path = Path("book.txt")
     >>> world.book.download("bk_words_of_the_wind", path)
     >>> path.read_text()[:18]
     'Words of the Wind\n'
 
 - Sub-clients are used to group endpoints together, and are automatically instantiated
+- [Status codes are checked](http_request.md#expected-status-codes) and an exception is
+  raised on missmatch (only `200` is allowed by default)
 - [Basic authentication](http_auth.md) is set up on the root client, to be used on all
   sub-clients
-- Response streaming is used to store the content of a book into a file
+- [Response streaming](http_request.md#stream-mode) is used to store the content of a
+  book into a file

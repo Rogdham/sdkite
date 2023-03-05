@@ -4,6 +4,7 @@ from sdkite.http.exceptions import (
     HTTPConnectionError,
     HTTPContextError,
     HTTPError,
+    HTTPStatusCodeError,
     HTTPTimeoutError,
 )
 from sdkite.http.model import (
@@ -26,6 +27,7 @@ __all__ = (
     "HTTPConnectionError",
     "HTTPContextError",
     "HTTPError",
+    "HTTPStatusCodeError",
     "HTTPTimeoutError",
     # sdkite.http.model
     "HTTPBodyEncoding",

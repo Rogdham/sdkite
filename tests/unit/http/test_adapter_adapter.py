@@ -1,6 +1,6 @@
 import re
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from unittest.mock import Mock, call
 
 import pytest
@@ -13,6 +13,7 @@ from sdkite.http import (
     HTTPRequest,
     HTTPRequestAttemptInfo,
     HTTPResponse,
+    HTTPStatusCodeError,
 )
 
 if sys.version_info < (3, 9):  # pragma: no cover
@@ -22,13 +23,16 @@ else:  # pragma: no cover
 
 
 class FakeResponse(HTTPResponse):
+    def __init__(self, status_code: int = 200) -> None:
+        self._status_code = status_code
+
     @property
     def raw(self) -> object:
         raise NotImplementedError
 
     @property
     def status_code(self) -> int:
-        raise NotImplementedError
+        return self._status_code
 
     @property
     def reason(self) -> str:
@@ -62,6 +66,7 @@ def create_adapter(
 ) -> Tuple[HTTPAdapter, Mock, Mock]:
     # pylint: disable=protected-access
     send_request = Mock()
+    send_request.return_value.status_code = 200
     adapter = HTTPAdapter(send_request)
     adapter._attr_name = "http"
     client = Mock()
@@ -130,6 +135,27 @@ def test_request_url(base_url: Optional[str], url: Optional[str]) -> None:
             )
         )
     ]
+
+
+def test_request_retry_status_code() -> None:
+    adapter, send_request, _ = create_adapter()
+
+    request_attempt = 0
+
+    def do_send_request(_: HTTPRequest) -> FakeResponse:
+        nonlocal request_attempt
+        request_attempt += 1
+        return FakeResponse(200 if request_attempt == 3 else 503)
+
+    send_request.side_effect = do_send_request
+
+    # fail with only 2 attempts
+    with pytest.raises(HTTPStatusCodeError):
+        adapter.request("GET", "https://www.example.com", retry_nb_attempts=2)
+
+    # works with more attempts
+    request_attempt = 0
+    adapter.request("GET", "https://www.example.com")
 
 
 @pytest.mark.parametrize(
@@ -338,6 +364,8 @@ def test_request_with_interceptors() -> None:
     adapter.response_interceptor["inter2"] = 1
     adapter.response_interceptor["inter3"] = 0
 
+    client.inter2.return_value.status_code = 200
+
     response = adapter.request("GET", "https://www.example.com")
 
     assert client.inter0.call_args_list == [
@@ -471,6 +499,42 @@ def test_adapter_request_sugar(method: str) -> None:
             )
         )
     ]
+
+
+@pytest.mark.parametrize("status_code", [204, 301, 404, 500])
+def test_invalid_status_code(status_code: int) -> None:
+    adapter, send_request, _ = create_adapter()
+    send_request.return_value.status_code = status_code
+
+    with pytest.raises(
+        HTTPStatusCodeError, match=f"^Unexpected status code: {status_code}$"
+    ) as excinfo:
+        adapter.request("GET", "https://www.example.com")
+    assert excinfo.value.status_code == status_code
+
+    with pytest.raises(
+        HTTPStatusCodeError, match=f"^Unexpected status code: {status_code}$"
+    ) as excinfo:
+        adapter.get("https://www.example.com")
+    assert excinfo.value.status_code == status_code
+
+    expected_status_codes_list: List[Union[int, str, Tuple[int, int]]] = [
+        status_code,
+        str(status_code),
+        "xxx",
+        (999, status_code),
+    ]
+
+    for expected_status_codes in expected_status_codes_list:
+        adapter.request(
+            "GET",
+            "https://www.example.com",
+            expected_status_codes=expected_status_codes,
+        )
+        adapter.get(
+            "https://www.example.com",
+            expected_status_codes=expected_status_codes,
+        )
 
 
 def test_adapter_context_manager() -> None:
