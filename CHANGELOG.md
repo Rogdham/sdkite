@@ -9,6 +9,10 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 [unreleased]: https://github.com/rogdham/sdkite/compare/v0.3.0...HEAD
 
+### :boom: Breaking changes
+
+- `HTTPAdapterSpec`'s `headers` parameter is now keyword-only
+
 ### :house: Internal
 
 - Add `Adapter._from_adapter_hierarchy` to get easy access to values from the adapter

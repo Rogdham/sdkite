@@ -169,6 +169,7 @@ class HTTPAdapterSpec(AdapterSpec[HTTPAdapter]):
     def __init__(
         self,
         url: Optional[str] = None,
+        *,
         headers: Optional[Mapping[str, str]] = None,
     ) -> None:
         self.url = url
