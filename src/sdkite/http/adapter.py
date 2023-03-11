@@ -97,22 +97,17 @@ class HTTPAdapter(Adapter):
         method = method.upper()
 
         # url
-        url_parts = [adapter.url for adapter in self._adapters]
-        if url:
-            url_parts.append(url)
-        url = urlsjoin(url_parts)
+        url = urlsjoin(self._from_adapter_hierarchy("url", url))
         if url is None:
             raise ValueError("No URL provided")
 
         # headers
-        headers_parts: List[Optional[Mapping[str, str]]] = [
-            adapter.headers for adapter in self._adapters
-        ]
-        headers_parts.append(headers)
+        _headers = headers
         headers = HTTPHeaderDict()
-        for headers_part in headers_parts:
+        for headers_part in self._from_adapter_hierarchy("headers", _headers):
             if headers_part:
                 headers.update(headers_part)
+        del _headers
 
         # body
         body, content_type = encode_request_body(body, body_encoding)

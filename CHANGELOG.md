@@ -11,6 +11,8 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### :house: Internal
 
+- Add `Adapter._from_adapter_hierarchy` to get easy access to values from the adapter
+  hierarchy
 - Simplify `assert_type` imports following `typing-extensions` requirement on Python up
   to 3.10
 

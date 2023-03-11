@@ -34,6 +34,9 @@ class Adapter:
     def _adapters(self) -> Tuple[Self, ...]:
         return tuple(getattr(client, self._attr_name) for client in self._clients)
 
+    def _from_adapter_hierarchy(self, attr_name: str, *values: Any) -> Tuple[Any, ...]:
+        return tuple(getattr(adapter, attr_name) for adapter in self._adapters) + values
+
 
 def create_adapter_proxy(
     adapter: A,

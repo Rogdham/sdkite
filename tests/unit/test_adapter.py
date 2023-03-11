@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, cast
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, cast
 
 import pytest
 
@@ -63,6 +63,7 @@ class AdapterComplex(Adapter):
 
     uvw: List[int]
     xyz: List[str]
+    ijk: Optional[str]
 
     no_instance = True
 
@@ -81,6 +82,9 @@ class AdapterComplex(Adapter):
         assert self._adapters[-1] == self
         return [adp.xyz for adp in self._adapters]
 
+    def get_adp_hierarchy(self, *args: Optional[str]) -> Tuple[Optional[str], ...]:
+        return self._from_adapter_hierarchy("ijk", *args)
+
     def __repr__(self) -> str:
         return f"AC<{self.uvw},{self.xyz}>"
 
@@ -90,6 +94,7 @@ class AdapterSpecComplex(AdapterSpec[AdapterComplex]):
 
     def __init__(self, *xyz: str) -> None:
         self.xyz = list(xyz)
+        self.ijk = self.xyz[1] if len(self.xyz) > 1 else None
 
     def _create_adapter(self) -> AdapterComplex:
         return AdapterComplex()
@@ -166,9 +171,21 @@ def test_adapter_spec_complex(swap_order: bool) -> None:
     assert client1.adp.get_client_names() == ["ClientComplex0", "ClientComplex1"]
     assert client0.adp.get_adp_attrs() == [["13", "37", "end"]]
     assert client1.adp.get_adp_attrs() == [["13", "37", "end"], ["42"]]
+    assert client0.adp.get_adp_hierarchy() == ("37",)
+    assert client1.adp.get_adp_hierarchy() == ("37", None)
+    assert client1.adp.get_adp_hierarchy("4", None, "2") == ("37", None, "4", None, "2")
 
     assert client0bis.adp.get_adp_attrs() == [["13", "37"]]
     assert client1bis.adp.get_adp_attrs() == [["13", "37"], ["42"]]
+    assert client0bis.adp.get_adp_hierarchy() == ("37",)
+    assert client1bis.adp.get_adp_hierarchy() == ("37", None)
+    assert client1bis.adp.get_adp_hierarchy("4", None, "2") == (
+        "37",
+        None,
+        "4",
+        None,
+        "2",
+    )
 
 
 class ClientNoAdapter(Client):
