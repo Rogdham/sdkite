@@ -4,6 +4,7 @@ from sdkite.http.model import (
     HTTPBodyEncoding,
     HTTPHeaderDict,
     HTTPRequest,
+    HTTPRequestAttemptInfo,
     HTTPResponse,
 )
 
@@ -19,5 +20,6 @@ __all__ = (
     "HTTPBodyEncoding",
     "HTTPHeaderDict",
     "HTTPRequest",
+    "HTTPRequestAttemptInfo",
     "HTTPResponse",
 )

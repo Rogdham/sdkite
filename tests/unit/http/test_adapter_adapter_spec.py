@@ -1,6 +1,7 @@
+from contextlib import nullcontext
 import re
-from typing import TYPE_CHECKING
-from unittest.mock import Mock
+from typing import TYPE_CHECKING, Any
+from unittest.mock import Mock, call
 
 import pytest
 
@@ -14,6 +15,7 @@ from sdkite.http import (
     HTTPResponse,
 )
 from sdkite.http import adapter as adapter_module
+from sdkite.http.adapter import _BeforeSleep
 
 if TYPE_CHECKING:
     from sdkite import Client
@@ -57,24 +59,113 @@ def patched_adapter(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(adapter_module, "HTTPEngineRequests", engine)
 
 
-def test_no_interceptor() -> None:
+@pytest.fixture
+def patched_tenacity(monkeypatch: pytest.MonkeyPatch) -> Mock:
+    tenacity = Mock()
+
+    tenacity.Retrying.return_value = [nullcontext()]
+    tenacity.stop_after_attempt.side_effect = call
+    tenacity.wait_exponential_jitter.side_effect = call
+
+    for attr in ["Retrying", "stop_after_attempt", "wait_exponential_jitter"]:
+        monkeypatch.setattr(adapter_module, attr, getattr(tenacity, attr))
+
+    return tenacity
+
+
+def test_base(
+    patched_tenacity: Mock,  # pylint: disable=redefined-outer-name
+) -> None:
     class Klass(Client):
         _parent = None
 
         xxx = HTTPAdapterSpec(url="https://www.example.com/xxx")
 
+    expected_request = HTTPRequest(
+        method="GET",
+        url="https://www.example.com/xxx/uvw",
+        headers=HTTPHeaderDict(),
+        body=b"",
+        stream_response=False,
+    )
+
     client = Klass()
     response = client.xxx.request("GET", "uvw")
-    assert response == FakeResponse(
-        "send_request",
-        HTTPRequest(
-            method="GET",
-            url="https://www.example.com/xxx/uvw",
-            headers=HTTPHeaderDict(),
-            body=b"",
-            stream_response=False,
-        ),
+    assert response == FakeResponse("send_request", expected_request)
+
+    assert patched_tenacity.Retrying.call_args_list == [
+        call(
+            stop=patched_tenacity.stop_after_attempt(3),
+            wait=patched_tenacity.wait_exponential_jitter(
+                initial=1.0, max=60.0, jitter=1.0
+            ),
+            before_sleep=_BeforeSleep(None, expected_request),
+            reraise=True,
+        )
+    ]
+
+
+def test_retry_at_spec_level(
+    patched_tenacity: Mock,  # pylint: disable=redefined-outer-name
+) -> None:
+    # these get deepcopy-ed so Mock() would not work
+    retry_callback0: Any = "retry_callback0"
+    retry_callback1: Any = "retry_callback1"
+
+    class Klass(Client):
+        _parent = None
+
+        xxx = HTTPAdapterSpec(
+            url="https://www.example.com/xxx",
+            retry_nb_attempts=1,
+            retry_wait_initial=2.0,
+            retry_wait_max=3.0,
+            retry_wait_jitter=4.0,
+            retry_callback=retry_callback0,
+        )
+
+    expected_request = HTTPRequest(
+        method="GET",
+        url="https://www.example.com/xxx/uvw",
+        headers=HTTPHeaderDict(),
+        body=b"",
+        stream_response=False,
     )
+
+    client = Klass()
+
+    client.xxx.request("GET", "uvw")
+    assert patched_tenacity.Retrying.call_args_list == [
+        call(
+            stop=patched_tenacity.stop_after_attempt(1),
+            wait=patched_tenacity.wait_exponential_jitter(
+                initial=2.0, max=3.0, jitter=4.0
+            ),
+            before_sleep=_BeforeSleep(retry_callback0, expected_request),
+            reraise=True,
+        )
+    ]
+    patched_tenacity.Retrying.reset_mock()
+
+    client.xxx.request(
+        "GET",
+        "uvw",
+        retry_nb_attempts=6,
+        retry_wait_initial=7.0,
+        retry_wait_max=8.0,
+        retry_wait_jitter=9.0,
+        retry_callback=retry_callback1,
+    )
+    assert patched_tenacity.Retrying.call_args_list == [
+        call(
+            stop=patched_tenacity.stop_after_attempt(6),
+            wait=patched_tenacity.wait_exponential_jitter(
+                initial=7.0, max=8.0, jitter=9.0
+            ),
+            before_sleep=_BeforeSleep(retry_callback1, expected_request),
+            reraise=True,
+        )
+    ]
 
 
 def test_overidden_content_type() -> None:

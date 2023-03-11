@@ -1,8 +1,17 @@
+from copy import deepcopy
+from dataclasses import dataclass
 from functools import partial
 from inspect import BoundArguments, signature
 import sys
 from typing import Any, Dict, List, Optional, Set, Tuple, TypeVar
 import warnings
+
+from tenacity import (
+    RetryCallState,
+    Retrying,
+    stop_after_attempt,
+    wait_exponential_jitter,
+)
 
 from sdkite import Adapter, AdapterSpec
 from sdkite.http.engine_requests import HTTPEngineRequests
@@ -10,10 +19,11 @@ from sdkite.http.model import (
     HTTPBodyEncoding,
     HTTPHeaderDict,
     HTTPRequest,
+    HTTPRequestAttemptInfo,
     HTTPResponse,
 )
 from sdkite.http.utils import encode_request_body, urlsjoin
-from sdkite.utils import zip_reverse
+from sdkite.utils import last_not_none, zip_reverse
 
 if sys.version_info < (3, 8):  # pragma: no cover
     from typing_extensions import Literal, Protocol
@@ -35,6 +45,12 @@ P = ParamSpec("P")
 T = TypeVar("T")
 
 HTTPAdapterSendRequest = Callable[[HTTPRequest], HTTPResponse]
+
+
+_DEFAULT_RETRY_NB_ATTEMPTS = 3
+_DEFAULT_WAIT_INITIAL = 1.0
+_DEFAULT_WAIT_MAX = 60.0
+_DEFAULT_WAIT_JITTER = 1.0
 
 
 class _HTTPAdapterRequestWithoutMethodReturn(Protocol):
@@ -62,9 +78,40 @@ class _HTTPAdapterRequestWithoutMethod:
         return partial(instance.request, self.name)
 
 
+@dataclass
+class _BeforeSleep:
+    retry_callback: Optional[Callable[[HTTPRequestAttemptInfo], None]]
+    initial_request: HTTPRequest
+
+    def __call__(self, retry_call_state: RetryCallState) -> None:
+        if self.retry_callback is None:
+            return
+        exception: BaseException = (
+            retry_call_state.outcome.exception()  # type: ignore[union-attr, assignment]
+        )
+        seconds_since_start: float = (
+            retry_call_state.seconds_since_start  # type: ignore[assignment]
+        )
+        self.retry_callback(
+            HTTPRequestAttemptInfo(
+                attempt_number=retry_call_state.attempt_number,
+                initial_request=self.initial_request,
+                exception=exception,
+                seconds_since_start=seconds_since_start,
+            )
+        )
+
+
 class HTTPAdapter(Adapter):
     url: Optional[str]
     headers: HTTPHeaderDict
+
+    retry_nb_attempts: Optional[int]
+    retry_callback: Optional[Callable[[HTTPRequestAttemptInfo], None]]
+    retry_wait_initial: Optional[float]
+    retry_wait_max: Optional[float]
+    retry_wait_jitter: Optional[float]
+
     request_interceptor: Dict[str, int]
     response_interceptor: Dict[str, int]
 
@@ -88,6 +135,11 @@ class HTTPAdapter(Adapter):
         body_encoding: HTTPBodyEncoding = HTTPBodyEncoding.AUTO,
         headers: Optional[Mapping[str, str]] = None,
         stream_response: bool = False,
+        retry_nb_attempts: Optional[int] = None,
+        retry_callback: Optional[Callable[[HTTPRequestAttemptInfo], None]] = None,
+        retry_wait_initial: Optional[float] = None,
+        retry_wait_max: Optional[float] = None,
+        retry_wait_jitter: Optional[float] = None,
     ) -> HTTPResponse:
         #
         # create request
@@ -122,7 +174,7 @@ class HTTPAdapter(Adapter):
             headers["content-type"] = content_type
 
         # create request object
-        request = HTTPRequest(
+        initial_request = HTTPRequest(
             method=method,
             url=url,
             headers=headers,
@@ -134,16 +186,51 @@ class HTTPAdapter(Adapter):
         # send request
         #
 
-        # request interceptors
-        for interceptor in self._get_interceptors("request_interceptor"):
-            request = interceptor(request, self)
+        # get values from parent adapters if None, or use default
+        retry_nb_attempts = last_not_none(
+            self._from_adapter_hierarchy("retry_nb_attempts", retry_nb_attempts),
+            _DEFAULT_RETRY_NB_ATTEMPTS,
+        )
+        retry_callback = last_not_none(
+            self._from_adapter_hierarchy("retry_callback", retry_callback)
+        )
+        retry_wait_initial = last_not_none(
+            self._from_adapter_hierarchy("retry_wait_initial", retry_wait_initial),
+            _DEFAULT_WAIT_INITIAL,
+        )
+        retry_wait_max = last_not_none(
+            self._from_adapter_hierarchy("retry_wait_max", retry_wait_max),
+            _DEFAULT_WAIT_MAX,
+        )
+        retry_wait_jitter = last_not_none(
+            self._from_adapter_hierarchy("retry_wait_jitter", retry_wait_jitter),
+            _DEFAULT_WAIT_JITTER,
+        )
 
-        # send request
-        response = self._send_request(request)
+        before_sleep = _BeforeSleep(retry_callback, initial_request)
 
-        # response interceptors
-        for interceptor in self._get_interceptors("response_interceptor"):
-            response = interceptor(response, self)
+        for attempt in Retrying(
+            stop=stop_after_attempt(retry_nb_attempts),
+            wait=wait_exponential_jitter(
+                initial=retry_wait_initial,
+                max=retry_wait_max,
+                jitter=retry_wait_jitter,
+            ),
+            before_sleep=before_sleep,
+            reraise=True,
+        ):
+            request = deepcopy(initial_request)
+            with attempt:
+                # request interceptors
+                for interceptor in self._get_interceptors("request_interceptor"):
+                    request = interceptor(request, self)
+
+                # send request
+                response = self._send_request(request)
+
+                # response interceptors
+                for interceptor in self._get_interceptors("response_interceptor"):
+                    response = interceptor(response, self)
 
         return response
 
@@ -171,9 +258,21 @@ class HTTPAdapterSpec(AdapterSpec[HTTPAdapter]):
         url: Optional[str] = None,
         *,
         headers: Optional[Mapping[str, str]] = None,
+        retry_nb_attempts: Optional[int] = None,
+        retry_callback: Optional[Callable[[HTTPRequestAttemptInfo], None]] = None,
+        retry_wait_initial: Optional[float] = None,
+        retry_wait_max: Optional[float] = None,
+        retry_wait_jitter: Optional[float] = None,
     ) -> None:
         self.url = url
         self.headers = HTTPHeaderDict(headers)
+
+        self.retry_nb_attempts = retry_nb_attempts
+        self.retry_callback = retry_callback
+        self.retry_wait_initial = retry_wait_initial
+        self.retry_wait_max = retry_wait_max
+        self.retry_wait_jitter = retry_wait_jitter
+
         self.request_interceptor: Dict[str, int] = {}
         self.response_interceptor: Dict[str, int] = {}
 

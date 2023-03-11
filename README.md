@@ -25,10 +25,10 @@ Main points before alpha version:
 
 - [x] Minimal documentation
 - [ ] Complete documentation
-- [ ] Handle retrying
 - [ ] Improve HTTP adapter
   - [x] Support for more request body types (basic types)
   - [ ] Support for even more request body types (files, iterables)
+  - [x] Handle retrying
   - [ ] Handle _bad_ status codes
   - [x] Builtin auth handlers like basic auth
   - [x] Usual shortcuts like `.get(...)` for `.request('get', ...)`

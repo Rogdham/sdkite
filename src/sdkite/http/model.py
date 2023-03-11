@@ -128,3 +128,11 @@ class HTTPResponse(ABC):
         """
         The body of the response JSON-decoded, for easier access.
         """
+
+
+@dataclass
+class HTTPRequestAttemptInfo:
+    attempt_number: int
+    exception: BaseException
+    initial_request: HTTPRequest
+    seconds_since_start: float

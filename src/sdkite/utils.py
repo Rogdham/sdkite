@@ -1,10 +1,10 @@
 import sys
-from typing import Tuple, TypeVar
+from typing import Optional, Tuple, TypeVar, overload
 
 if sys.version_info < (3, 9):  # pragma: no cover
-    from typing import Iterable, Sequence
+    from typing import Iterable, Reversible, Sequence
 else:  # pragma: no cover
-    from collections.abc import Iterable, Sequence
+    from collections.abc import Iterable, Reversible, Sequence
 
 
 T = TypeVar("T")
@@ -21,3 +21,22 @@ def zip_reverse(items_a: Sequence[T], items_b: Sequence[U]) -> Iterable[Tuple[T,
         # but since we have sequences anyways this avoids dealing with backward compatibility
         raise ValueError("zip_reverse() arguments have different lengths")
     return zip(reversed(items_a), reversed(items_b))
+
+
+@overload
+def last_not_none(items: Reversible[T]) -> Optional[T]:
+    ...
+
+
+@overload
+def last_not_none(items: Reversible[Optional[T]], default: T) -> T:
+    ...
+
+
+def last_not_none(
+    items: Reversible[Optional[T]], default: Optional[T] = None
+) -> Optional[T]:
+    for item in reversed(items):
+        if item is not None:
+            return item
+    return default

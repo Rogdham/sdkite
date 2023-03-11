@@ -13,6 +13,13 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 - `HTTPAdapterSpec`'s `headers` parameter is now keyword-only
 
+### :rocket: Added
+
+- HTTP requests are now retried several times in case of exception; this behavior can be
+  modified with the following parameters: `retry_nb_attempts`, `retry_wait_initial`,
+  `retry_wait_max`, `retry_wait_jitter`, and `retry_callback` allows to be notified when
+  a retry is performed
+
 ### :house: Internal
 
 - Add `Adapter._from_adapter_hierarchy` to get easy access to values from the adapter

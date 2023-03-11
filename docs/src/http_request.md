@@ -70,3 +70,23 @@ To ask the server to stream the response, set the `stream_response` parameter to
 
 It is then recommended to use the `data_stream` attribute of
 [the response object](http_response.md).
+
+## Retry options
+
+If an exception is raised when performing the request, 2 more attempts will be made with
+some wait time between them.
+
+This can be customized by passing some arguments:
+
+- `retry_nb_attempts` to specify the total number of attempts (defaults to 3 attempts)
+- `retry_wait_initial`, `retry_wait_max` and `retry_wait_jitter` allow to specify the
+  exponential backoff parameters for the retry (they default to 1s, 60s and 1s
+  respectively)
+
+Finally, a `retry_callback` can be passed to be notified when a retry is performed. This
+can be used for logging purposes for instance.
+
+All these parameters can be specified (by order of precedence):
+
+- When calling a request method (or get, post, etc.)
+- On the HTTPAdapterSpec of each client

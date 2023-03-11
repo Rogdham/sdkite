@@ -1,9 +1,15 @@
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from unittest.mock import Mock, call
 
 import pytest
 
-from sdkite.http import HTTPAdapter, HTTPBodyEncoding, HTTPHeaderDict, HTTPRequest
+from sdkite.http import (
+    HTTPAdapter,
+    HTTPBodyEncoding,
+    HTTPHeaderDict,
+    HTTPRequest,
+    HTTPRequestAttemptInfo,
+)
 
 
 def create_adapter(
@@ -22,6 +28,11 @@ def create_adapter(
         adapter._clients = parent_adapter._clients + adapter._clients
     adapter.url = url
     adapter.headers = HTTPHeaderDict(headers)
+    adapter.retry_nb_attempts = None
+    adapter.retry_callback = None
+    adapter.retry_wait_initial = 0  # change default value for faster tests
+    adapter.retry_wait_max = None
+    adapter.retry_wait_jitter = 0  # change default value for faster tests
     adapter.request_interceptor = {}
     adapter.response_interceptor = {}
     return (adapter, send_request, client)
@@ -76,6 +87,86 @@ def test_request_url(base_url: Optional[str], url: Optional[str]) -> None:
             )
         )
     ]
+
+
+@pytest.mark.parametrize(
+    "success_at_attempt_nb, retry_nb_attempts_arg, expected_error_at_attempt",
+    [
+        # default retry_nb_attempts
+        pytest.param(1, None, None, id="default-1"),
+        pytest.param(2, None, None, id="default-2"),
+        pytest.param(3, None, None, id="default-3"),
+        pytest.param(4, None, 3, id="default-4"),
+        pytest.param(5, None, 3, id="default-5"),
+        # custom retry_nb_attempts argument
+        pytest.param(1, 2, None, id="custom-1"),
+        pytest.param(2, 2, None, id="custom-2"),
+        pytest.param(3, 2, 2, id="custom-3"),
+        pytest.param(4, 2, 2, id="custom-4"),
+        pytest.param(5, 2, 2, id="custom-5"),
+    ],
+)
+def test_request_retry(
+    success_at_attempt_nb: int,
+    retry_nb_attempts_arg: Optional[int],
+    expected_error_at_attempt: Optional[bool],
+) -> None:
+    adapter, send_request, client = create_adapter()
+
+    adapter.request_interceptor["inter"] = 0
+
+    # side-effect on request in interceptor to test initial_request in retry callback
+    def intercept(request: HTTPRequest, _: HTTPAdapter) -> HTTPRequest:
+        request.headers["X-Intercepted"] = "yes"
+        return request
+
+    client.inter.side_effect = intercept
+
+    expected_response = object()
+
+    class CustomException(Exception):
+        def __eq__(self, other: Any) -> bool:
+            return type(self) is type(other) and self.args == other.args
+
+    request_attempt = 0
+
+    def do_send_request(*_: object, **__: object) -> object:
+        nonlocal request_attempt
+        request_attempt += 1
+        if request_attempt == success_at_attempt_nb:
+            return expected_response
+        raise CustomException(f"Send request error {request_attempt}")
+
+    send_request.side_effect = do_send_request
+
+    logged_retries: List[Tuple[int, BaseException]] = []
+
+    def retry_callback(attempt_info: HTTPRequestAttemptInfo) -> None:
+        logged_retries.append((attempt_info.attempt_number, attempt_info.exception))
+        assert attempt_info.initial_request == HTTPRequest(
+            "GET", "https://www.example.com", HTTPHeaderDict(), b"", False
+        )
+        assert 0.0 < attempt_info.seconds_since_start < 0.1
+
+    kwargs: Any = {
+        "retry_callback": retry_callback,
+    }
+    if retry_nb_attempts_arg is not None:
+        kwargs["retry_nb_attempts"] = retry_nb_attempts_arg
+
+    if expected_error_at_attempt is None:
+        response = adapter.request("GET", "https://www.example.com", **kwargs)
+        assert response == expected_response
+
+    else:
+        with pytest.raises(CustomException) as excinfo:
+            adapter.request("GET", "https://www.example.com", **kwargs)
+        assert str(excinfo.value) == f"Send request error {expected_error_at_attempt}"
+
+    assert logged_retries == [
+        (i, CustomException(f"Send request error {i}"))
+        for i in range(1, min(success_at_attempt_nb, retry_nb_attempts_arg or 3))
+    ], "retry_callback"
 
 
 def test_no_request_url() -> None:
@@ -240,6 +331,21 @@ def test_request_with_interceptors() -> None:
         )
     ]
     assert response == client.inter2.return_value
+
+
+def test_request_interceptor_crash() -> None:
+    adapter, _, client = create_adapter()
+    adapter.response_interceptor["inter"] = 0
+
+    class CustomException(Exception):
+        pass
+
+    client.inter.side_effect = CustomException("Interceptor crash msg")
+
+    with pytest.raises(CustomException) as excinfo:
+        adapter.request("GET", "https://www.example.com")
+
+    assert str(excinfo.value) == "Interceptor crash msg"
 
 
 def test_request_with_interceptors_hierarchy() -> None:
