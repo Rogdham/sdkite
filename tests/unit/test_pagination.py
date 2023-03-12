@@ -1,7 +1,7 @@
 from binascii import crc32
 from inspect import Parameter, signature
 import sys
-from typing import TYPE_CHECKING, Any, List, Optional, Union, cast, get_type_hints
+from typing import Any, List, Optional, Union, cast, get_type_hints
 from unittest.mock import Mock, call
 
 import pytest
@@ -18,13 +18,10 @@ if sys.version_info < (3, 9):  # pragma: no cover
 else:  # pragma: no cover
     from collections.abc import Iterable, Iterator
 
-
-if TYPE_CHECKING:
+if sys.version_info < (3, 11):  # pragma: no cover
     from typing_extensions import assert_type
-else:
-    # no need to have typing_extensions installed
-    def assert_type(val: Any, _: Any) -> Any:
-        return val
+else:  # pragma: no cover
+    from typing import assert_type
 
 
 def test_paginated_page() -> None:

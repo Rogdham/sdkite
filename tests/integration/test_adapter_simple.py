@@ -1,14 +1,12 @@
 from io import SEEK_END, StringIO
-from typing import TYPE_CHECKING, Any
+import sys
 
 from sdkite import AdapterSpec, Client
 
-if TYPE_CHECKING:
+if sys.version_info < (3, 11):  # pragma: no cover
     from typing_extensions import assert_type
-else:
-    # no need to have typing_extensions installed
-    def assert_type(val: Any, _: Any) -> Any:
-        return val
+else:  # pragma: no cover
+    from typing import assert_type
 
 
 class ValueSpec(AdapterSpec[StringIO]):
