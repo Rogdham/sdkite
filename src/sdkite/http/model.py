@@ -2,12 +2,20 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto, unique
 import sys
-from typing import Dict, List, Tuple, Union
+from types import TracebackType
+from typing import Dict, List, Optional, Tuple, Type, Union
+
+from sdkite.http.exceptions import HTTPContextError
 
 if sys.version_info < (3, 9):  # pragma: no cover
     from typing import Iterable, Iterator, Mapping, MutableMapping
 else:  # pragma: no cover
     from collections.abc import Iterable, Iterator, Mapping, MutableMapping
+
+if sys.version_info < (3, 11):  # pragma: no cover
+    from typing_extensions import Self
+else:  # pragma: no cover
+    from typing import Self
 
 
 class HTTPHeaderDict(MutableMapping[str, str]):
@@ -73,6 +81,8 @@ class HTTPRequest:
 
 
 class HTTPResponse(ABC):
+    __context: Optional[HTTPRequest] = None
+
     @property
     @abstractmethod
     def raw(self) -> object:
@@ -128,6 +138,25 @@ class HTTPResponse(ABC):
         """
         The body of the response JSON-decoded, for easier access.
         """
+
+    def _set_context(self, context: HTTPRequest) -> None:
+        self.__context = context
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        if exc_val and self.__context:
+            raise HTTPContextError.from_exception(
+                exc_val,
+                request=self.__context,
+                response=self,
+            ) from exc_val
 
 
 @dataclass

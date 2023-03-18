@@ -1,5 +1,11 @@
 from sdkite.http.adapter import HTTPAdapter, HTTPAdapterSendRequest, HTTPAdapterSpec
 from sdkite.http.auth import BasicAuth, NoAuth
+from sdkite.http.exceptions import (
+    HTTPConnectionError,
+    HTTPContextError,
+    HTTPError,
+    HTTPTimeoutError,
+)
 from sdkite.http.model import (
     HTTPBodyEncoding,
     HTTPHeaderDict,
@@ -16,6 +22,11 @@ __all__ = (
     # sdkite.http.auth
     "BasicAuth",
     "NoAuth",
+    # sdkite.http.exceptions
+    "HTTPConnectionError",
+    "HTTPContextError",
+    "HTTPError",
+    "HTTPTimeoutError",
     # sdkite.http.model
     "HTTPBodyEncoding",
     "HTTPHeaderDict",

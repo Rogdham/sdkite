@@ -99,6 +99,20 @@ def _patch_http(requests_mock: Mocker) -> None:
         text="The /noauth endpoint has been called without auth",
     )
 
+    #
+    # http_response
+    #
+    requests_mock.register_uri(
+        "GET",
+        "https://api.example.com/user/1",
+        json={"name": "Alice", "age": 42},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://api.example.com/user/2",
+        json={"name": "Bob"},
+    )
+
 
 @pytest.fixture(autouse=True)
 def _create_replay_store(tmp_path: Path) -> None:

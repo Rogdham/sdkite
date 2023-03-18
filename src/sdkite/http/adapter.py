@@ -233,6 +233,9 @@ class HTTPAdapter(Adapter):
                 for interceptor in self._get_interceptors("response_interceptor"):
                     response = interceptor(response, self)
 
+        response._set_context(  # pylint: disable=protected-access)  # noqa: SLF001
+            initial_request
+        )
         return response
 
     def _get_interceptors(

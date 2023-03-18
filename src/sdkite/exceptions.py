@@ -1,0 +1,2 @@
+class SDKiteError(Exception):
+    pass

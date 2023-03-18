@@ -1,4 +1,5 @@
 import re
+import sys
 from typing import Any, Dict, List, Optional, Tuple
 from unittest.mock import Mock, call
 
@@ -7,10 +8,51 @@ import pytest
 from sdkite.http import (
     HTTPAdapter,
     HTTPBodyEncoding,
+    HTTPContextError,
     HTTPHeaderDict,
     HTTPRequest,
     HTTPRequestAttemptInfo,
+    HTTPResponse,
 )
+
+if sys.version_info < (3, 9):  # pragma: no cover
+    from typing import Iterator
+else:  # pragma: no cover
+    from collections.abc import Iterator
+
+
+class FakeResponse(HTTPResponse):
+    @property
+    def raw(self) -> object:
+        raise NotImplementedError
+
+    @property
+    def status_code(self) -> int:
+        raise NotImplementedError
+
+    @property
+    def reason(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def headers(self) -> HTTPHeaderDict:
+        raise NotImplementedError
+
+    @property
+    def data_stream(self) -> Iterator[bytes]:
+        raise NotImplementedError
+
+    @property
+    def data_bytes(self) -> bytes:
+        raise NotImplementedError
+
+    @property
+    def data_str(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def data_json(self) -> object:
+        raise NotImplementedError
 
 
 def create_adapter(
@@ -123,7 +165,7 @@ def test_request_retry(
 
     client.inter.side_effect = intercept
 
-    expected_response = object()
+    expected_response = FakeResponse()
 
     class CustomError(Exception):
         def __eq__(self, other: Any) -> bool:
@@ -131,7 +173,7 @@ def test_request_retry(
 
     request_attempt = 0
 
-    def do_send_request(*_: object, **__: object) -> object:
+    def do_send_request(_: HTTPRequest) -> FakeResponse:
         nonlocal request_attempt
         request_attempt += 1
         if request_attempt == success_at_attempt_nb:
@@ -429,3 +471,31 @@ def test_adapter_request_sugar(method: str) -> None:
             )
         )
     ]
+
+
+def test_adapter_context_manager() -> None:
+    adapter, send_request, _ = create_adapter()
+
+    def do_send_request(_: HTTPRequest) -> HTTPResponse:
+        return FakeResponse()
+
+    send_request.side_effect = do_send_request
+
+    with adapter.get("https://www.example.com") as response:
+        assert isinstance(response, FakeResponse)
+
+    with pytest.raises(HTTPContextError) as excinfo:  # noqa: PT012,SIM117
+        with adapter.get("https://www.example.com") as response:
+            raise ValueError("oops")
+
+    exception = excinfo.value
+    assert str(exception) == "ValueError: oops"
+    assert exception.request == HTTPRequest(
+        method="GET",
+        url="https://www.example.com",
+        headers=HTTPHeaderDict(),
+        body=b"",
+        stream_response=False,
+    )
+    assert isinstance(exception.response, FakeResponse)
+    assert isinstance(exception.__context__, ValueError)

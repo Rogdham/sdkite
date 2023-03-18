@@ -1,5 +1,6 @@
 from sdkite.adapter import Adapter, AdapterSpec
 from sdkite.client import Client
+from sdkite.exceptions import SDKiteError
 from sdkite.pagination import Pagination, paginated
 
 try:
@@ -16,6 +17,8 @@ __all__ = (
     "AdapterSpec",
     # sdkite.client
     "Client",
+    # sdkite.exceptions
+    "SDKiteError",
     # sdkite.pagination
     "Pagination",
     "paginated",

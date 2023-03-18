@@ -1,5 +1,7 @@
 # HTTP Response
 
+## Attributes
+
 The following attributes of the HTTP response can be used:
 
 `status_code`
@@ -33,3 +35,45 @@ The following attributes of the HTTP response can be used:
 `raw`
 
 : The response object coming from the adapter (e.g. `requests.Response`)
+
+## Usage as a context manager
+
+When a response is used as a context manager, all exceptions raised within the context
+manager are caught an `HTTPContextError` exception is raised instead.
+
+    :::python
+    >>> from sdkite.http import HTTPAdapterSpec, HTTPContextError
+
+    >>> class RootClient(Client):
+    ...     _http = HTTPAdapterSpec(url="https://api.example.com/")
+    ...
+    ...     def get_user(self, user_id):
+    ...         with self._http.get(f"user/{user_id}") as response:
+    ...             return (response.data_json["name"], response.data_json["age"])
+
+    >>> RootClient().get_user(1)
+    ('Alice', 42)
+
+    >>> RootClient().get_user(2)
+    Traceback (most recent call last):
+        ...
+    sdkite.http.exceptions.HTTPContextError: KeyError: 'age'
+
+This is useful to have the HTTP context (request, response) in which the issue happened,
+for example when validating the data returned by the API endpoint.
+
+    :::python
+    >>> try:
+    ...     RootClient().get_user(2)
+    ... except HTTPContextError as ex:
+    ...     print(f"Invalid API response in URL {ex.request.url}")
+    ...     print(f"Got JSON {ex.response.data_json}")
+    ...     print(f"Exception raised is {ex}")
+    Invalid API response in URL https://api.example.com/user/2
+    Got JSON {'name': 'Bob'}
+    Exception raised is KeyError: 'age'
+
+!!! Note
+
+    The original exception is available through the `__cause__` attribute of the
+    `HTTPContextError` instance.

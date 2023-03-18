@@ -33,7 +33,8 @@ Main points before alpha version:
   - [x] Builtin auth handlers like basic auth
   - [x] Usual shortcuts like `.get(...)` for `.request('get', ...)`
   - [ ] Allow to disable interceptors on a specific request
-  - [ ] Wrapt `requests`' exceptions
+  - [x] Wrapt `requests`' exceptions
   - [ ] Support more HTTP adapters
+  - [ ] Real end-to-end integration test for HTTP endpoints
 - [ ] Remove `requests` from dependencies
 - [ ] And more!

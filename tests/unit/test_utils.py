@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import pytest
 
-from sdkite.utils import identity, last_not_none, zip_reverse
+from sdkite.utils import identity, last_not_none, walk_exception_context, zip_reverse
 
 if sys.version_info < (3, 11):  # pragma: no cover
     from typing_extensions import assert_type
@@ -57,3 +57,49 @@ def test_last_not_none_typing() -> None:
     assert_type(last_not_none(mandatory_list, 42), int)
     assert_type(last_not_none(optional_list), Optional[int])
     assert_type(last_not_none(optional_list, 42), int)
+
+
+@pytest.mark.parametrize("exception_cause", [None, True, False])
+def test_walk_exception_context(exception_cause: Optional[bool]) -> None:
+    class AException(BaseException):
+        pass
+
+    class BException(BaseException):
+        pass
+
+    class CException(BaseException):
+        pass
+
+    exception = None
+    try:
+        try:
+            try:
+                raise AException
+            except AException as exa:
+                raise BException from exa
+        except BException as exb:
+            if exception_cause is None:
+                raise CException from None
+            if exception_cause:
+                raise CException from exb
+            raise CException  # pylint: disable=raise-missing-from  # noqa: B904
+    except CException as cex:
+        exception = cex
+
+    assert isinstance(exception, CException)
+
+    assert isinstance(
+        walk_exception_context(exception, ValueError),
+        CException,
+    )
+    assert isinstance(
+        walk_exception_context(exception, CException),
+        BException,
+    )
+    assert isinstance(
+        walk_exception_context(exception, (BException, CException)),
+        AException,
+    )
+    assert (
+        walk_exception_context(exception, (AException, BException, CException)) is None
+    )

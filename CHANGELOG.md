@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+[unreleased]: https://github.com/rogdham/sdkite/compare/v0.4.0...HEAD
+
+### :boom: Breaking changes
+
+- All exceptions raised by HTTP engines are now instances of `HTTPError`
+
+### :rocket: Added
+
+- The response returned by HTTP engines can be used as a context manager; in that case,
+  exceptions happening within the context manager are re-raised though
+  `HTTPContextError`, which gives the context in which the exception ocurred
+
 ## [0.4.0] - 2023-04-16
 
 [0.4.0]: https://github.com/rogdham/sdkite/compare/v0.3.0...v0.4.0

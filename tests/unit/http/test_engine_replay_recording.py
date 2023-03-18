@@ -6,7 +6,7 @@ from typing import Set
 import pytest
 from requests_mock import Mocker, NoMockAddress
 
-from sdkite.http import HTTPHeaderDict, HTTPRequest
+from sdkite.http import HTTPError, HTTPHeaderDict, HTTPRequest
 from sdkite.http.engine_replay import HTTPEngineReplay, HTTPResponseReplay
 
 REPLAY_PATH = Path(__file__).parent / "engine_replay"
@@ -146,10 +146,13 @@ def test_recording(tmp_path: Path, requests_mock: Mocker) -> None:
         stream_response=False,
     )
     with pytest.raises(
-        NoMockAddress,
-        match=re.escape("No mock address: GET https://example.com/"),
-    ):
+        HTTPError,
+        match=re.escape("NoMockAddress: No mock address: GET https://example.com/"),
+    ) as excinfo:
         response = engine(request)
+    assert (  # pylint: disable=unidiomatic-typecheck
+        type(excinfo.value.__context__) is NoMockAddress
+    )
 
 
 @pytest.mark.parametrize("recording", [True, False])

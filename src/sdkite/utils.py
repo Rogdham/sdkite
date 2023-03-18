@@ -1,5 +1,5 @@
 import sys
-from typing import Optional, Tuple, TypeVar, overload
+from typing import Optional, Tuple, Type, TypeVar, Union, overload
 
 if sys.version_info < (3, 9):  # pragma: no cover
     from typing import Iterable, Reversible, Sequence
@@ -40,3 +40,14 @@ def last_not_none(
         if item is not None:
             return item
     return default
+
+
+def walk_exception_context(
+    exception: Optional[BaseException],
+    exclude_type: Union[Type[BaseException], Tuple[Type[BaseException], ...]],
+) -> Optional[BaseException]:
+    while exception is not None:
+        if not isinstance(exception, exclude_type):
+            return exception
+        exception = exception.__context__
+    return None
