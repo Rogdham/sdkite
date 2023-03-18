@@ -169,7 +169,7 @@ class HTTPAdapter(Adapter):
                     "The 'content-type' header is being overridden"
                     f" due to request body encoding {body_encoding}"
                     f" (from '{headers['content-type']}' to '{content_type}')",
-                    RuntimeWarning,
+                    UserWarning,
                 )
             headers["content-type"] = content_type
 
@@ -308,7 +308,7 @@ class HTTPAdapterSpec(AdapterSpec[HTTPAdapter]):
                 f"Interceptor '{attr_name}' of '{self._attr_name}' has already been registered"
                 f" with order {interceptors[attr_name]}, ignoring new registration"
                 f" with order {order}",
-                RuntimeWarning,
+                UserWarning,
             )
         else:
             interceptors[attr_name] = order

@@ -20,6 +20,10 @@ adheres to [Semantic Versioning](https://semver.org/).
   `retry_wait_max`, `retry_wait_jitter`, and `retry_callback` allows to be notified when
   a retry is performed
 
+### :bug: Fixes
+
+- Warnings due to wrong usage are now using `UserWarning` instead of `RuntimeWarning`
+
 ### :house: Internal
 
 - Add `Adapter._from_adapter_hierarchy` to get easy access to values from the adapter

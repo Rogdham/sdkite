@@ -1,10 +1,9 @@
-from contextlib import nullcontext
 import re
+from contextlib import nullcontext
 from typing import TYPE_CHECKING, Any
 from unittest.mock import Mock, call
 
 import pytest
-
 from sdkite.http import (
     HTTPAdapter,
     HTTPAdapterSendRequest,
@@ -176,7 +175,7 @@ def test_overidden_content_type() -> None:
 
     client = Klass()
     with pytest.warns(
-        RuntimeWarning,
+        UserWarning,
         match=re.escape(
             "The 'content-type' header is being overridden due to request body encoding"
             " HTTPBodyEncoding.JSON (from 'custom' to 'application/json')"
@@ -341,7 +340,7 @@ def test_register_interceptor_existing() -> None:
             return FakeResponse("xxx_resp", response)
 
     with pytest.warns(
-        RuntimeWarning,
+        UserWarning,
         match=re.escape(
             "Interceptor 'xxx_req' of 'xxx' has already been registered"
             " with order 0, ignoring new registration with order 42"
@@ -350,7 +349,7 @@ def test_register_interceptor_existing() -> None:
         Klass.xxx.register_interceptor("request_interceptor", "xxx_req", 42)
 
     with pytest.warns(
-        RuntimeWarning,
+        UserWarning,
         match=re.escape(
             "Interceptor 'xxx_resp' of 'xxx' has already been registered"
             " with order 1, ignoring new registration with order 42"
