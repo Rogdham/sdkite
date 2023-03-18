@@ -11,6 +11,8 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### :boom: Breaking changes
 
+- The requests HTTP engine is now using a timeout of 40 seconds for connection and 30
+  seconds afterwards (or 10 minutes in case of streaming)
 - `HTTPAdapterSpec`'s `headers` parameter is now keyword-only
 
 ### :rocket: Added

@@ -72,6 +72,7 @@ class HTTPEngineRequests:
             data=request.body,
             stream=request.stream_response,
             allow_redirects=False,
+            timeout=(40, 600 if request.stream_response else 30),
         )
 
         return HTTPResponseRequests(response)
