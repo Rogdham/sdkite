@@ -46,7 +46,7 @@ def test_subclients() -> None:
 
     assert client.var_a == 42
     with pytest.raises(AttributeError):
-        client.var_b  # pylint: disable=pointless-statement
+        client.var_b  # pylint: disable=pointless-statement  # noqa: B018
     assert isinstance(client, ClientC)
 
     assert isinstance(client.var_c, ClientA)

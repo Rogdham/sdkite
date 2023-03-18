@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import re
 import secrets
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -9,7 +10,7 @@ from sdkite.http.utils import encode_request_body
 
 
 @pytest.fixture(autouse=True)
-def patched_adapter(monkeypatch: pytest.MonkeyPatch) -> None:
+def _patched_adapter(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(secrets, "token_hex", lambda size: "0" * size)
 
 
@@ -336,7 +337,7 @@ _CASES_DESCRIPTIONS: List[Tuple[str, object, Dict[HTTPBodyEncoding, Union[Ok, Ko
 
 
 @pytest.mark.parametrize(
-    "body, encoding, expected",
+    ["body", "encoding", "expected"],
     [
         pytest.param(
             body,
@@ -362,11 +363,12 @@ def test_cases(
         assert content_type == expected.content_type, "Invalid content type"
 
     else:
-        with pytest.raises(TypeError) as excinfo:
+        with pytest.raises(
+            TypeError, match=re.escape(expected.msg(encoding))
+        ) as excinfo:
             encode_request_body(body, encoding)
 
         assert excinfo.type is TypeError
-        assert str(excinfo.value) == expected.msg(encoding)
 
 
 def test_invalid_encoding_type() -> None:

@@ -46,9 +46,7 @@ def create_adapter_proxy(
 ) -> A:
     klass = type(adapter)
 
-    # pylint: disable=unused-argument
-
-    def init(self: Any) -> None:
+    def init(_: Any) -> None:
         pass
 
     def getattribute(self: Any, name: str) -> Any:
@@ -64,7 +62,7 @@ def create_adapter_proxy(
             attr = getattr(adapter, name)
         return attr
 
-    def setattribute(self: Any, name: str, value: Any) -> None:
+    def setattribute(_: Any, name: str, value: Any) -> None:
         if name in ("_attr_name", "_clients"):
             raise RuntimeError(f"Attribute {name} is read-only")  # pragma: no cover
         if name in context:
@@ -145,8 +143,8 @@ class AdapterSpec(Generic[A], ABC):
                         )
                     last_descriptor_type = type(descriptor)
                     clients.append(current_client)
-                if current_client._parent:
-                    current_client = current_client._parent
+                if current_client._parent:  # noqa: SLF001
+                    current_client = current_client._parent  # noqa: SLF001
                 else:
                     if sys.version_info < (3, 10):  # pragma: no cover
                         # fix coverage issue on some Python versions

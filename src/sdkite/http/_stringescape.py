@@ -12,7 +12,7 @@ _loads_table: Dict[bytes, int] = {}
 for _i in range(256):
     _value = f"\\x{_i:02x}"
     _loads_table[_value.encode("ascii")] = _i
-    if 32 <= _i <= 126 and _i != 92:
+    if ord(" ") <= _i <= ord("~") and _i != ord("\\"):
         _value = chr(_i)
         _loads_table[_value.encode("ascii")] = _i
     _dumps_table[_i] = _value

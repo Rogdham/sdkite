@@ -67,11 +67,10 @@ class HTTPResponseReplay(HTTPResponse):
     def data_bytes(self) -> bytes:
         try:
             parts = [next(self.data_stream)]
-        except Exception:
-            # pylint: disable=raise-missing-from
+        except StopIteration:
             raise ValueError(
                 "The data_xxx attributes can be only accessed once with the replay engine"
-            )
+            ) from None
         parts.extend(self.data_stream)
         return b"".join(parts)
 

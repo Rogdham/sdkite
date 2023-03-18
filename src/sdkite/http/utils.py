@@ -69,9 +69,9 @@ def _visitor_obj(path: str, obj: object) -> Iterator[None]:
     try:
         yield
     except _VisitorTypeError as ex:
-        raise ex.context(path)
+        raise ex.context(path) from None
     except TypeError:
-        raise _VisitorTypeError(path, obj=obj)  # pylint: disable=raise-missing-from
+        raise _VisitorTypeError(path, obj=obj) from None
 
 
 class _Visitor:
@@ -86,9 +86,9 @@ class _Visitor:
                 first = True
                 for i, value in enumerate(sorted(obj) if isinstance(obj, set) else obj):
                     with _visitor_obj(repr(i), obj=value):
-                        yield from self._visit_sequence_item_start(first)
+                        yield from self._visit_sequence_item_start(first=first)
                         yield from self.visit(value)
-                        yield from self._visit_sequence_item_end(first)
+                        yield from self._visit_sequence_item_end(first=first)
                     first = False
                 yield from self._visit_sequence_end()
                 return
@@ -97,9 +97,9 @@ class _Visitor:
                 first = True
                 for key in sorted(obj):
                     with _visitor_obj(repr(key), obj=obj[key]):
-                        yield from self._visit_mapping_item_start(key, first)
+                        yield from self._visit_mapping_item_start(key, first=first)
                         yield from self.visit(obj[key])
-                        yield from self._visit_mapping_item_end(key, first)
+                        yield from self._visit_mapping_item_end(key, first=first)
                     first = False
                 yield from self._visit_mapping_end()
                 return
@@ -107,11 +107,11 @@ class _Visitor:
         except _VisitorTypeError:
             raise
         except TypeError:
-            raise _VisitorTypeError(obj=obj)  # pylint: disable=raise-missing-from
+            raise _VisitorTypeError(obj=obj) from None
 
     # pylint: disable=unused-argument
 
-    def _visit_raw(self, obj: object) -> Iterator[bytes]:
+    def _visit_raw(self, obj: object) -> Iterator[bytes]:  # noqa: ARG002
         return _EMPTY_ITERATOR  # pragma: no cover
 
     def _visit_sequence_start(self) -> Iterator[bytes]:
@@ -120,10 +120,14 @@ class _Visitor:
     def _visit_sequence_end(self) -> Iterator[bytes]:
         return _EMPTY_ITERATOR  # pragma: no cover
 
-    def _visit_sequence_item_start(self, first: bool) -> Iterator[bytes]:
+    def _visit_sequence_item_start(
+        self, *, first: bool  # noqa: ARG002
+    ) -> Iterator[bytes]:
         return _EMPTY_ITERATOR  # pragma: no cover
 
-    def _visit_sequence_item_end(self, first: bool) -> Iterator[bytes]:
+    def _visit_sequence_item_end(
+        self, *, first: bool  # noqa: ARG002
+    ) -> Iterator[bytes]:
         return _EMPTY_ITERATOR  # pragma: no cover
 
     def _visit_mapping_start(self) -> Iterator[bytes]:
@@ -132,10 +136,14 @@ class _Visitor:
     def _visit_mapping_end(self) -> Iterator[bytes]:
         return _EMPTY_ITERATOR  # pragma: no cover
 
-    def _visit_mapping_item_start(self, key: object, first: bool) -> Iterator[bytes]:
+    def _visit_mapping_item_start(
+        self, key: object, *, first: bool  # noqa: ARG002
+    ) -> Iterator[bytes]:
         return _EMPTY_ITERATOR  # pragma: no cover
 
-    def _visit_mapping_item_end(self, key: object, first: bool) -> Iterator[bytes]:
+    def _visit_mapping_item_end(
+        self, key: object, *, first: bool  # noqa: ARG002
+    ) -> Iterator[bytes]:
         return _EMPTY_ITERATOR  # pragma: no cover
 
 
@@ -168,7 +176,7 @@ class _VisitorJSON(_Visitor):
     def _visit_sequence_end(self) -> Iterator[bytes]:
         yield b"]"
 
-    def _visit_sequence_item_start(self, first: bool) -> Iterator[bytes]:
+    def _visit_sequence_item_start(self, *, first: bool) -> Iterator[bytes]:
         if not first:
             yield b","
 
@@ -178,7 +186,7 @@ class _VisitorJSON(_Visitor):
     def _visit_mapping_end(self) -> Iterator[bytes]:
         yield b"}"
 
-    def _visit_mapping_item_start(self, key: object, first: bool) -> Iterator[bytes]:
+    def _visit_mapping_item_start(self, key: object, *, first: bool) -> Iterator[bytes]:
         if not first:
             yield b","
         with _visitor_obj(_VisitorTypeError.MAPPING_KEY_PATH, obj=key):
@@ -208,7 +216,7 @@ class _VisitorURLEncode(_Visitor):
         self.root = False
         return _EMPTY_ITERATOR
 
-    def _visit_mapping_item_start(self, key: object, first: bool) -> Iterator[bytes]:
+    def _visit_mapping_item_start(self, key: object, *, first: bool) -> Iterator[bytes]:
         if not first:
             yield b"&"
         with _visitor_obj(_VisitorTypeError.MAPPING_KEY_PATH, obj=key):
@@ -242,7 +250,9 @@ class _VisitorMultipart(_Visitor):
         self.root = False
         return _EMPTY_ITERATOR
 
-    def _visit_mapping_item_start(self, key: object, first: bool) -> Iterator[bytes]:
+    def _visit_mapping_item_start(
+        self, key: object, *, first: bool  # noqa: ARG002
+    ) -> Iterator[bytes]:
         with _visitor_obj(_VisitorTypeError.MAPPING_KEY_PATH, obj=key):
             name = b"".join(self._visit_raw(key))
         yield (
@@ -255,7 +265,9 @@ class _VisitorMultipart(_Visitor):
             urlencode(name),
         )
 
-    def _visit_mapping_item_end(self, key: object, first: bool) -> Iterator[bytes]:
+    def _visit_mapping_item_end(
+        self, key: object, *, first: bool  # noqa: ARG002
+    ) -> Iterator[bytes]:
         yield b"\r\n"
 
     def _visit_mapping_end(self) -> Iterator[bytes]:
@@ -273,9 +285,8 @@ def encode_request_body(
         encoding = HTTPBodyEncoding.JSON
         if isinstance(body, (bytes, str, NoneType)):
             encoding = HTTPBodyEncoding.NONE
-        elif isinstance(body, dict):
-            if any(isinstance(key, bytes) for key in body):
-                encoding = HTTPBodyEncoding.URLENCODE
+        elif isinstance(body, dict) and any(isinstance(key, bytes) for key in body):
+            encoding = HTTPBodyEncoding.URLENCODE
 
     visitor: _Visitor
     if encoding == HTTPBodyEncoding.NONE:
@@ -301,6 +312,6 @@ def encode_request_body(
             error_msg += f" ({'>'.join(ex.path)})"
         error_msg += f" of type '{type(ex.obj).__name__}'"
         error_msg += f" with '{original_encoding.name}' encoding"
-        raise TypeError(error_msg)  # pylint: disable=raise-missing-from
+        raise TypeError(error_msg) from None
 
     return data, content_type

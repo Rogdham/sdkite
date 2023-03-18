@@ -18,15 +18,15 @@ def test_basic_auth() -> None:
 
     # modify creds on one client instance
     client1.auth.username = "Alice"
-    client1.auth.password = "$ecr3t"
+    client1.auth.password = "$ecr3t"  # noqa: S105
 
     # did not modify creds on class instance
     assert WithBasicAuth.auth.username == "user"
-    assert WithBasicAuth.auth.password == "password"
+    assert WithBasicAuth.auth.password == "password"  # noqa: S105
 
     # did not modify creds on other client instance
     assert client0.auth.username == "user"
-    assert client0.auth.password == "password"
+    assert client0.auth.password == "password"  # noqa: S105
 
     for i, client, cred in [
         (0, client0, "dXNlcjpwYXNzd29yZA=="),

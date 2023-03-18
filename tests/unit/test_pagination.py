@@ -1,5 +1,6 @@
 from binascii import crc32
 from inspect import Parameter, signature
+import re
 import sys
 from typing import Any, List, Optional, Union, cast, get_type_hints
 from unittest.mock import Mock, call
@@ -73,7 +74,6 @@ def test_paginated_offset_during_iteration() -> None:
     @paginated()
     def fct(pagination: Pagination) -> Iterable[int]:
         for _ in range(10):
-            print(pagination.offset)
             yield pagination.offset
             if pagination.offset == 42:
                 pagination.finish()
@@ -110,7 +110,7 @@ def test_paginated_context() -> None:
     ]
 
 
-@pytest.mark.parametrize("stop_when_empty", (None, True, False))
+@pytest.mark.parametrize("stop_when_empty", [None, True, False])
 def test_paginated_stop_when_empty(stop_when_empty: Optional[bool]) -> None:
     mock_range = Mock(side_effect=range)
     sizes = [30, 10, 20, 0, 40, 50]
@@ -131,7 +131,7 @@ def test_paginated_stop_when_empty(stop_when_empty: Optional[bool]) -> None:
         return cast(range, mock_range(start, stop))
 
     # contrary to 'paginated', 'decorator' is not in pylint's 'signature-mutators'
-    # pylint: disable-next=no-value-for-parameter
+    # pylint: disable-next=no-value-for-parameter
     return_value = fct()
 
     if stop_when_empty is False:
@@ -467,57 +467,55 @@ def test_paginated_not_iterable() -> None:
 
     output = fct()
 
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(TypeError, match=re.escape("'int' object is not iterable")):
         list(output)
-
-    assert str(excinfo.value) == "'int' object is not iterable"
 
 
 def test_paginated_no_param() -> None:
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Paginated function 'fct' must have 'pagination' as first parameter"
+        ),
+    ):
 
         @paginated()  # type: ignore[arg-type]
         def fct() -> Iterable[int]:
             yield 42
 
-    assert (
-        str(excinfo.value)
-        == "Paginated function 'fct' must have 'pagination' as first parameter"
-    )
-
 
 def test_paginated_wrong_param_name() -> None:
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Paginated function 'fct' must have 'pagination' as first parameter"
+        ),
+    ):
 
         @paginated()
         def fct(
             # pylint: disable=unused-argument
-            param0: Pagination,
-            param1: int,
+            param0: Pagination,  # noqa: ARG001
+            param1: int,  # noqa: ARG001
         ) -> Iterable[int]:
             yield 42
 
-    assert (
-        str(excinfo.value)
-        == "Paginated function 'fct' must have 'pagination' as first parameter"
-    )
-
 
 def test_paginated_wrong_param_kind() -> None:
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Paginated function 'fct' must have 'pagination' as first parameter"
+        ),
+    ):
 
         @paginated()  # type: ignore[arg-type]
         def fct(
             # pylint: disable=unused-argument
             *,
-            pagination: Pagination,
+            pagination: Pagination,  # noqa: ARG001
         ) -> Iterable[int]:
             yield 42
-
-    assert (
-        str(excinfo.value)
-        == "Paginated function 'fct' must have 'pagination' as first parameter"
-    )
 
 
 def test_paginated_called_with_pagination_param() -> None:
@@ -525,26 +523,26 @@ def test_paginated_called_with_pagination_param() -> None:
     def fct(
         # pylint: disable=unused-argument
         pagination: Pagination,
-        *args: int,
-        **kwargs: int,
+        *args: int,  # noqa: ARG001
+        **kwargs: int,  # noqa: ARG001
     ) -> Iterable[int]:
         if pagination.page == 0:
             yield 42
 
     assert list(fct(13, param=37)) == [42]
 
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Paginated function 'fct' cannot be called with a 'pagination' parameter"
+        ),
+    ):
         list(fct(13, pagination=37))
-
-    assert (
-        str(excinfo.value)
-        == "Paginated function 'fct' cannot be called with a 'pagination' parameter"
-    )
 
 
 def test_paginated_no_type_hint() -> None:
     @paginated()
-    def fct(pagination):  # type: ignore
+    def fct(pagination):  # type: ignore[no-untyped-def,misc]  # noqa: ANN001,ANN202
         if pagination.page == 4:
             pagination.finish()
         return range(pagination.offset, pagination.offset + 10)

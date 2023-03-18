@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import time
 from typing import Set
 
@@ -12,7 +13,7 @@ REPLAY_PATH = Path(__file__).parent / "engine_replay"
 
 
 @pytest.fixture(autouse=True)
-def patched_time(monkeypatch: pytest.MonkeyPatch) -> None:
+def _patched_time(monkeypatch: pytest.MonkeyPatch) -> None:
     def mocked_time() -> int:
         return 1234567890
 
@@ -144,7 +145,10 @@ def test_recording(tmp_path: Path, requests_mock: Mocker) -> None:
         body=b"",
         stream_response=False,
     )
-    with pytest.raises(NoMockAddress):
+    with pytest.raises(
+        NoMockAddress,
+        match=re.escape("No mock address: GET https://example.com/"),
+    ):
         response = engine(request)
 
 

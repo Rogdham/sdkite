@@ -10,7 +10,7 @@ from sdkite.http import HTTPRequest, HTTPResponse
 
 
 @pytest.fixture(scope="module", autouse=True)
-def import_pytest(doctest_namespace: Dict[str, object]) -> None:
+def _import_pytest(doctest_namespace: Dict[str, object]) -> None:
     doctest_namespace["Iterator"] = Iterator
     doctest_namespace["Path"] = Path
 
@@ -58,7 +58,7 @@ def import_pytest(doctest_namespace: Dict[str, object]) -> None:
 
 
 @pytest.fixture(autouse=True)
-def patch_http(requests_mock: Mocker) -> None:
+def _patch_http(requests_mock: Mocker) -> None:
     #
     # quickstart
     #
@@ -101,7 +101,7 @@ def patch_http(requests_mock: Mocker) -> None:
 
 
 @pytest.fixture(autouse=True)
-def create_replay_store(tmp_path: Path) -> None:
+def _create_replay_store(tmp_path: Path) -> None:
     store = tmp_path / "replay"
     store.mkdir()
     (store / "ping.json").write_bytes(
@@ -124,7 +124,7 @@ def create_replay_store(tmp_path: Path) -> None:
 
 
 @pytest.fixture(autouse=True)
-def change_directory(tmp_path: Path) -> Iterator[None]:
+def _change_directory(tmp_path: Path) -> Iterator[None]:
     cwd = getcwd()
     try:
         chdir(tmp_path)

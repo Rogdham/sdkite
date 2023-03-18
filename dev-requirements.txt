@@ -13,10 +13,10 @@ requests-mock
 
 # lint
 pylint
+ruff==0.0.261
 
 # format
 black
-isort
 
 # publish
 setuptools_scm

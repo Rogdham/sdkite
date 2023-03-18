@@ -1,9 +1,10 @@
-import re
 from contextlib import nullcontext
+import re
 from typing import TYPE_CHECKING, Any
 from unittest.mock import Mock, call
 
 import pytest
+
 from sdkite.http import (
     HTTPAdapter,
     HTTPAdapterSendRequest,
@@ -52,7 +53,7 @@ class FakeResponse(HTTPResponse):
 
 
 @pytest.fixture(autouse=True)
-def patched_adapter(monkeypatch: pytest.MonkeyPatch) -> None:
+def _patched_adapter(monkeypatch: pytest.MonkeyPatch) -> None:
     engine = Mock()
     engine.return_value = lambda request: FakeResponse("send_request", request)
     monkeypatch.setattr(adapter_module, "HTTPEngineRequests", engine)

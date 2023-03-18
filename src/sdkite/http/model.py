@@ -39,7 +39,7 @@ class HTTPHeaderDict(MutableMapping[str, str]):
         try:
             return ", ".join(self._contents[key.lower()][1:])
         except KeyError:
-            raise KeyError(key)  # pylint: disable=raise-missing-from
+            raise KeyError(key) from None
 
     def __setitem__(self, key: str, value: str) -> None:
         self._contents[key.lower()] = [key, value]

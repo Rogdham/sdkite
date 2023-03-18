@@ -60,8 +60,8 @@ def test_typing() -> None:
 
 def test_complete() -> None:
     client = RootClient()
-    assert client.read.normal() == ""
-    assert client.read.upper() == ""
+    assert not client.read.normal()
+    assert not client.read.upper()
 
     client.write.append("Hello")
     assert client.read.normal() == "Hello"
@@ -72,8 +72,8 @@ def test_complete() -> None:
     assert client.read.upper() == "HELLO, WORLD!"
 
     client.write.erase()
-    assert client.read.normal() == ""
-    assert client.read.upper() == ""
+    assert not client.read.normal()
+    assert not client.read.upper()
 
 
 def test_two_clients() -> None:
@@ -93,6 +93,6 @@ class RootClientMissingValue(Client):
 
 def test_root_client_missing_value() -> None:
     client = RootClientMissingValue()
-    assert client.read.normal() == ""
+    assert not client.read.normal()
     client.write.append("Hello")
-    assert client.read.normal() == ""  # did not change
+    assert not client.read.normal()  # did not change

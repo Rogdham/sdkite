@@ -17,7 +17,7 @@ else:  # pragma: no cover
 
 
 class HTTPResponseRequests(HTTPResponse):
-    def __init__(self, response: Response):
+    def __init__(self, response: Response) -> None:
         self._response = response
 
     @property

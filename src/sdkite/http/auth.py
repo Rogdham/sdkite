@@ -68,9 +68,7 @@ class BasicAuth(Auth):
 
         # pylint: enable=line-too-long
 
-        credentials = b64encode(
-            f"{self.username}:{self.password}".encode("utf8")
-        ).decode()
+        credentials = b64encode(f"{self.username}:{self.password}".encode()).decode()
         request.headers["Authorization"] = f"Basic {credentials}"
         return request
 

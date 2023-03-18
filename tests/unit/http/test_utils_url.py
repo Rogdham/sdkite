@@ -6,7 +6,7 @@ from sdkite.http.utils import urljoin, urlsjoin
 
 
 @pytest.mark.parametrize(
-    "base, url, expected",
+    ["base", "url", "expected"],
     [
         (None, None, None),
         ("", "", None),
@@ -37,7 +37,7 @@ def test_urljoin(
 
 
 @pytest.mark.parametrize(
-    "urls, expected",
+    ["urls", "expected"],
     [
         (
             [],

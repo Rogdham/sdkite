@@ -1,3 +1,4 @@
+import re
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, cast
 
 import pytest
@@ -47,11 +48,11 @@ def test_adapter_spec_simple(swap_order: bool) -> None:
 
     # different order of adp instantiation
     if swap_order:
-        client1.adp  # pylint: disable=pointless-statement
-        client0.adp  # pylint: disable=pointless-statement
+        client1.adp  # pylint: disable=pointless-statement  # noqa: B018
+        client0.adp  # pylint: disable=pointless-statement  # noqa: B018
     else:
-        client0.adp  # pylint: disable=pointless-statement
-        client1.adp  # pylint: disable=pointless-statement
+        client0.adp  # pylint: disable=pointless-statement  # noqa: B018
+        client1.adp  # pylint: disable=pointless-statement  # noqa: B018
 
     assert isinstance(client0.adp, AdapterSimple)
     assert isinstance(client1.adp, AdapterSimple)
@@ -127,11 +128,11 @@ def test_adapter_spec_complex(swap_order: bool) -> None:
 
     # different order of adp instantiation
     if swap_order:
-        client1.adp  # pylint: disable=pointless-statement
-        client0.adp  # pylint: disable=pointless-statement
+        client1.adp  # pylint: disable=pointless-statement  # noqa: B018
+        client0.adp  # pylint: disable=pointless-statement  # noqa: B018
     else:
-        client0.adp  # pylint: disable=pointless-statement
-        client1.adp  # pylint: disable=pointless-statement
+        client0.adp  # pylint: disable=pointless-statement  # noqa: B018
+        client1.adp  # pylint: disable=pointless-statement  # noqa: B018
 
     assert isinstance(client0.adp, AdapterComplex)
     assert isinstance(client1.adp, AdapterComplex)
@@ -201,11 +202,12 @@ def test_client_middle_no_adapter() -> None:
     client2 = ClientComplex1()
     client2._parent = client1  # pylint: disable=protected-access
 
-    client0.adp  # pylint: disable=pointless-statement
-    with pytest.raises(TypeError) as excinfo:
-        client2.adp  # pylint: disable=pointless-statement
-
-    assert str(excinfo.value) == "Client 'ClientComplex1' is missing adapter spec 'adp'"
+    client0.adp  # pylint: disable=pointless-statement  # noqa: B018
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Client 'ClientComplex1' is missing adapter spec 'adp'"),
+    ):
+        client2.adp  # pylint: disable=pointless-statement  # noqa: B018
 
 
 class ClientMixed1(Client):
@@ -221,11 +223,12 @@ def test_client_various_adapters() -> None:
     client1 = ClientMixed1()
     client1._parent = client0  # pylint: disable=protected-access
 
-    client0.adp  # pylint: disable=pointless-statement
-    with pytest.raises(TypeError) as excinfo:
-        client1.adp  # pylint: disable=pointless-statement
-
-    assert str(excinfo.value) == (
-        "Client 'ClientMixed1' has a wrong adapter spec: got 'AdapterSpecComplex' "
-        "instead of 'AdapterSpecSimple'"
-    )
+    client0.adp  # pylint: disable=pointless-statement  # noqa: B018
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Client 'ClientMixed1' has a wrong adapter spec: got 'AdapterSpecComplex' "
+            "instead of 'AdapterSpecSimple'"
+        ),
+    ):
+        client1.adp  # pylint: disable=pointless-statement  # noqa: B018

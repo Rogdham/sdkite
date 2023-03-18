@@ -170,6 +170,7 @@ class HTTPAdapter(Adapter):
                     f" due to request body encoding {body_encoding}"
                     f" (from '{headers['content-type']}' to '{content_type}')",
                     UserWarning,
+                    stacklevel=1,
                 )
             headers["content-type"] = content_type
 
@@ -309,6 +310,7 @@ class HTTPAdapterSpec(AdapterSpec[HTTPAdapter]):
                 f" with order {interceptors[attr_name]}, ignoring new registration"
                 f" with order {order}",
                 UserWarning,
+                stacklevel=1,
             )
         else:
             interceptors[attr_name] = order

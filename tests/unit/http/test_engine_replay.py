@@ -1,5 +1,6 @@
 from dataclasses import replace
 from pathlib import Path
+import re
 from typing import Dict, cast
 
 import pytest
@@ -24,8 +25,11 @@ def test_response() -> None:
     expected_headers = HTTPHeaderDict({"content-type": "application/json"})
 
     response_replay = HTTPResponseReplay(recorded_response)
-    with pytest.raises(ValueError):
-        response_replay.raw  # pylint: disable=pointless-statement
+    with pytest.raises(
+        ValueError,
+        match=re.escape("The 'raw' attribute is not available with the replay engine"),
+    ):
+        response_replay.raw  # pylint: disable=pointless-statement  # noqa: B018
     assert response_replay.status_code == 200
     assert response_replay.reason == "OK"
     assert response_replay.headers == expected_headers
@@ -45,13 +49,23 @@ def test_response() -> None:
 
     response_replay = HTTPResponseReplay(recorded_response)
     assert response_replay.data_bytes == b'{"msg": 42}'
-    with pytest.raises(ValueError):
-        response_replay.data_bytes  # pylint: disable=pointless-statement
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The data_xxx attributes can be only accessed once with the replay engine"
+        ),
+    ):
+        response_replay.data_bytes  # pylint: disable=pointless-statement  # noqa: B018
 
     response_replay = HTTPResponseReplay(recorded_response)
     assert response_replay.data_str == '{"msg": 42}'
-    with pytest.raises(ValueError):
-        response_replay.data_str  # pylint: disable=pointless-statement
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The data_xxx attributes can be only accessed once with the replay engine"
+        ),
+    ):
+        response_replay.data_str  # pylint: disable=pointless-statement  # noqa: B018
 
     response_replay = HTTPResponseReplay(recorded_response)
     assert response_replay.data_json == {"msg": 42}
@@ -142,45 +156,53 @@ def test_replay_existing() -> None:
         assert response.headers == HTTPHeaderDict({"server": "nginx"})
         assert response.data_json == {"msg": 42}
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "No response have been recorded for request: {"
+            "'method': 'HEAD', "
+            "'url': 'https://example.com/', "
+            "'headers': {}, "
+            "'body': b''}"
+        ),
+    ):
         engine(replace(request, method="HEAD"))
-    assert str(excinfo.value) == (
-        "No response have been recorded for request: {"
-        "'method': 'HEAD', "
-        "'url': 'https://example.com/', "
-        "'headers': {}, "
-        "'body': b''}"
-    )
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "No response have been recorded for request: {"
+            "'method': 'GET', "
+            "'url': 'https://example.com/foobar', "
+            "'headers': {}, "
+            "'body': b''}"
+        ),
+    ):
         engine(replace(request, url="https://example.com/foobar"))
-    assert str(excinfo.value) == (
-        "No response have been recorded for request: {"
-        "'method': 'GET', "
-        "'url': 'https://example.com/foobar', "
-        "'headers': {}, "
-        "'body': b''}"
-    )
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "No response have been recorded for request: {"
+            "'method': 'GET', "
+            "'url': 'https://example.com/', "
+            "'headers': {'foo': 'bar'}, "
+            "'body': b''}"
+        ),
+    ):
         engine(replace(request, headers=HTTPHeaderDict({"foo": "bar"})))
-    assert str(excinfo.value) == (
-        "No response have been recorded for request: {"
-        "'method': 'GET', "
-        "'url': 'https://example.com/', "
-        "'headers': {'foo': 'bar'}, "
-        "'body': b''}"
-    )
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "No response have been recorded for request: {"
+            "'method': 'GET', "
+            "'url': 'https://example.com/', "
+            "'headers': {}, "
+            "'body': b'foobar'}"
+        ),
+    ):
         engine(replace(request, body=b"foobar"))
-    assert str(excinfo.value) == (
-        "No response have been recorded for request: {"
-        "'method': 'GET', "
-        "'url': 'https://example.com/', "
-        "'headers': {}, "
-        "'body': b'foobar'}"
-    )
 
 
 @pytest.mark.parametrize("url_end", ["wrong_ext", "in_subfolder"])
@@ -193,7 +215,16 @@ def test_replay_miss(url_end: str) -> None:
         body=b"",
         stream_response=False,
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "No response have been recorded for request: {"
+            "'method': 'GET', "
+            f"'url': 'https://example.com/{url_end}', "
+            "'headers': {}, "
+            "'body': b''}"
+        ),
+    ):
         engine(request)
 
 
@@ -220,7 +251,16 @@ def test_replay_multiple_paths() -> None:
     assert response.data_json == {"msg": 37}
 
     # in none
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "No response have been recorded for request: {"
+            "'method': 'GET', "
+            "'url': 'https://example.com/miss', "
+            "'headers': {}, "
+            "'body': b''}"
+        ),
+    ):
         engine(replace(request, url="https://example.com/miss"))
 
 

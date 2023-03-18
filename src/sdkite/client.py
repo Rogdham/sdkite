@@ -23,5 +23,5 @@ class Client:
                         "Clients refer each other (found for"
                         f" {attr_type.__name__} used as {cls.__name__}.{attr_name})"
                     ) from ex
-                client._parent = self
+                client._parent = self  # noqa: SLF001
                 setattr(self, attr_name, client)

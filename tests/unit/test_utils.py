@@ -1,3 +1,4 @@
+import re
 import sys
 from typing import List, Optional
 
@@ -22,12 +23,15 @@ def test_zip_reverse() -> None:
 
 
 def test_zip_reverse_invalid_sizes() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape("zip_reverse() arguments have different lengths"),
+    ):
         zip_reverse((1, 2), "abc")
 
 
 @pytest.mark.parametrize(
-    "items, expected",
+    ["items", "expected"],
     [
         pytest.param([], None, id="empty"),
         pytest.param([1], 1, id="mandatory-1"),

@@ -1,3 +1,4 @@
+import re
 from typing import Dict, List, Tuple, Union
 
 import pytest
@@ -21,9 +22,8 @@ def test_getitem(key: str) -> None:
     assert repr(hdict) == r"HTTPHeaderDict{}"
 
     for key2 in keys_cases.values():
-        with pytest.raises(KeyError) as exc_info:
+        with pytest.raises(KeyError, match=re.escape(f"'{key2}'")):
             hdict[key2]  # pylint: disable=pointless-statement
-        assert exc_info.value.args == (key2,)
 
     hdict[key] = value
     assert repr(hdict) == f"HTTPHeaderDict{{'{key}': ['{value}']}}"

@@ -59,7 +59,7 @@ class Api(Client):
 
 
 @pytest.fixture
-def mock_http_requests(requests_mock: Mocker) -> None:
+def _mock_http_requests(requests_mock: Mocker) -> None:
     common_response: Any = {
         "reason": "OK",
         "headers": {"server": "nginx"},
@@ -114,9 +114,8 @@ def mock_http_requests(requests_mock: Mocker) -> None:
     )
 
 
-def test_http(
-    mock_http_requests: object,  # pylint: disable=redefined-outer-name,unused-argument
-) -> None:
+@pytest.mark.usefixtures("_mock_http_requests")
+def test_http() -> None:
     client = Api("https://www.example.com/api/v1", "s3cr3t")
 
     assert client.public.version() == "1.2.3"
@@ -140,9 +139,9 @@ def replay_request_modifier(request: HTTPRequest) -> HTTPRequest:
 
 
 def test_http_replay_replay(
-    # notice how we don't use `mock_http_requests` here
+    # notice how we don't use `_mock_http_requests` here
     # still patching requests just in case
-    requests_mock: Mocker,  # pylint: disable=unused-argument
+    requests_mock: Mocker,  # pylint: disable=unused-argument # noqa: ARG001
 ) -> None:
     Api._http.set_engine(  # pylint: disable=protected-access
         HTTPEngineReplay,
@@ -169,10 +168,8 @@ def test_http_replay_replay(
     ]
 
 
-def test_http_replay_record(
-    mock_http_requests: object,  # pylint: disable=redefined-outer-name,unused-argument
-    tmp_path: Path,
-) -> None:
+@pytest.mark.usefixtures("_mock_http_requests")
+def test_http_replay_record(tmp_path: Path) -> None:
     def recording_response_modifier(response: HTTPResponseReplay) -> HTTPResponseReplay:
         return response.replace(
             headers={

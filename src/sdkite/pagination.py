@@ -1,3 +1,4 @@
+from contextlib import suppress
 from functools import wraps
 from inspect import Parameter, signature
 import sys
@@ -158,13 +159,13 @@ def paginated(
                 iterable = fct(*arguments.args, **arguments.kwargs)
                 empty = True
                 for item in iterable:
-                    pagination._offset += 1
+                    pagination._offset += 1  # noqa: SLF001
                     empty = False
                     yield item
                 if empty and stop_when_empty:
                     pagination.finish()
                     break
-                pagination._page += 1
+                pagination._page += 1  # noqa: SLF001
 
         # fix the signature and annotations
 
@@ -173,15 +174,13 @@ def paginated(
         # so we are just using 'Iterator[Any]'
 
         # see https://github.com/python/mypy/issues/12472 for ignore below
-        wrapped.__signature__ = sig.replace(  # type: ignore
+        wrapped.__signature__ = sig.replace(  # type: ignore[attr-defined]
             parameters=parameters[:param_pos] + parameters[param_pos + 1 :],
             return_annotation=Iterator[Any],
         )
 
-        try:
+        with suppress(KeyError):  # maybe no type hint
             del wrapped.__annotations__["pagination"]
-        except KeyError:
-            pass  # maybe no type hint
         wrapped.__annotations__["return"] = Iterator[Any]
 
         return wrapped
