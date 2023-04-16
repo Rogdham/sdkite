@@ -68,6 +68,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#stream-mode">Stream mode</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#retry-options">Retry options</a>
+    </li>
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../http_response/">Response</a>
@@ -177,6 +179,23 @@ added.</p>
 <p>To ask the server to stream the response, set the <code>stream_response</code> parameter to <code>True</code>.</p>
 <p>It is then recommended to use the <code>data_stream</code> attribute of
 <a href="../http_response/">the response object</a>.</p>
+<h2 id="retry-options">Retry options</h2>
+<p>If an exception is raised when performing the request, 2 more attempts will be made with
+some wait time between them.</p>
+<p>This can be customized by passing some arguments:</p>
+<ul>
+<li><code>retry_nb_attempts</code> to specify the total number of attempts (defaults to 3 attempts)</li>
+<li><code>retry_wait_initial</code>, <code>retry_wait_max</code> and <code>retry_wait_jitter</code> allow to specify the
+  exponential backoff parameters for the retry (they default to 1s, 60s and 1s
+  respectively)</li>
+</ul>
+<p>Finally, a <code>retry_callback</code> can be passed to be notified when a retry is performed. This
+can be used for logging purposes for instance.</p>
+<p>All these parameters can be specified (by order of precedence):</p>
+<ul>
+<li>When calling a request method (or get, post, etc.)</li>
+<li>On the HTTPAdapterSpec of each client</li>
+</ul>
               
             </div>
           </div><footer>
