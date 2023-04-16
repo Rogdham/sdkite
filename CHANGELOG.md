@@ -32,6 +32,7 @@ adheres to [Semantic Versioning](https://semver.org/).
   hierarchy
 - Simplify `assert_type` imports following `typing-extensions` requirement on Python up
   to 3.10
+- Necessary code changes following dev dependency update: mypy
 
 ## [0.3.0] - 2023-02-26
 

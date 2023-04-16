@@ -185,4 +185,5 @@ def paginated(
 
         return wrapped
 
-    return paginated_decorator
+    # see https://github.com/python/mypy/issues/15065 for the ignore below
+    return paginated_decorator  # type: ignore[return-value]
