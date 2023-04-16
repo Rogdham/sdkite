@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.4.0] - 2023-04-16
 
-[unreleased]: https://github.com/rogdham/sdkite/compare/v0.3.0...HEAD
+[0.4.0]: https://github.com/rogdham/sdkite/compare/v0.3.0...v0.4.0
+
+v0.4.0 introduces request retrying and timeout
 
 ### :boom: Breaking changes
 
