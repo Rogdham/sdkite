@@ -88,7 +88,8 @@ This argument can be:
 To ask the server to stream the response, set the `stream_response` parameter to `True`.
 
 It is then recommended to use the `data_stream` attribute of
-[the response object](http_response.md).
+[the response object](http_response.md#attributes) and to use it
+[as a context manager](http_response.md#usage-as-a-context-manager).
 
 ## Retry options
 

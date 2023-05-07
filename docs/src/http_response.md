@@ -38,8 +38,18 @@ The following attributes of the HTTP response can be used:
 
 ## Usage as a context manager
 
-When a response is used as a context manager, all exceptions raised within the context
-manager are caught an `HTTPContextError` exception is raised instead.
+Using a response as a context manager has two main effects.
+
+First, some allocated resources are cleaned when leaving the context manager.
+
+!!! Note
+
+    This depends on the [HTTP engine](http_engine.md), but for example
+    [requests](https://github.com/psf/requests) needs this in streaming mode to be able
+    to release connections back to the pool.
+
+Second, all exceptions raised within the context manager are caught an
+`HTTPContextError` exception is raised instead.
 
     :::python
     >>> from sdkite.http import HTTPAdapterSpec, HTTPContextError

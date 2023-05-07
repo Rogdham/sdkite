@@ -20,7 +20,8 @@ adheres to [Semantic Versioning](https://semver.org/).
   `expected_status_codes` parameter
 - The response returned by HTTP engines can be used as a context manager; in that case,
   exceptions happening within the context manager are re-raised though
-  `HTTPContextError`, which gives the context in which the exception ocurred
+  `HTTPContextError`, which gives the context in which the exception ocurred; this is
+  also useful to clean resources for certain HTTP engines
 
 ## [0.4.0] - 2023-04-16
 

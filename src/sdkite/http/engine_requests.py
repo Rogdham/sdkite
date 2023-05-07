@@ -54,6 +54,9 @@ class HTTPResponseRequests(HTTPResponse):
     def data_json(self) -> object:
         return self._response.json()
 
+    def _close(self) -> None:
+        self._response.close()
+
 
 def _extract_exception(exception: BaseException) -> BaseException:
     wanted_exception = walk_exception_context(

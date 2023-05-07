@@ -193,17 +193,17 @@ class HTTPEngineReplay:
                 self.engine = HTTPEngineRequests()
 
             real_request = self.recording_request_modifier(deepcopy(request))
-            real_response = self.engine(real_request)
-            received_response = HTTPResponseReplay(
-                _RecordedResponse(
-                    status_code=real_response.status_code,
-                    reason=real_response.reason,
-                    headers=dict(real_response.headers),
-                    body=list(real_response.data_stream)
-                    if real_request.stream_response
-                    else [real_response.data_bytes],
+            with self.engine(real_request) as real_response:
+                received_response = HTTPResponseReplay(
+                    _RecordedResponse(
+                        status_code=real_response.status_code,
+                        reason=real_response.reason,
+                        headers=dict(real_response.headers),
+                        body=list(real_response.data_stream)
+                        if real_request.stream_response
+                        else [real_response.data_bytes],
+                    )
                 )
-            )
             response = self.recording_response_modifier(received_response)
 
             # save recorded response

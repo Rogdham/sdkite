@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from contextlib import suppress
 from dataclasses import dataclass
 from enum import Enum, auto, unique
 import sys
@@ -139,6 +140,9 @@ class HTTPResponse(ABC):
         The body of the response JSON-decoded, for easier access.
         """
 
+    def _close(self) -> None:  # noqa: B027
+        pass
+
     def _set_context(self, context: HTTPRequest) -> None:
         self.__context = context
 
@@ -151,12 +155,18 @@ class HTTPResponse(ABC):
         exc_val: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
+        with suppress(Exception):
+            self._close()
         if exc_val and self.__context:
             raise HTTPContextError.from_exception(
                 exc_val,
                 request=self.__context,
                 response=self,
             ) from exc_val
+
+    def __del__(self) -> None:
+        with suppress(Exception):
+            self._close()
 
 
 @dataclass

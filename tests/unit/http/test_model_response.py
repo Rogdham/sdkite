@@ -11,6 +11,9 @@ else:  # pragma: no cover
 
 
 class FakeResponse(HTTPResponse):
+    def __init__(self) -> None:
+        self.is_closed = False
+
     @property
     def raw(self) -> object:
         raise NotImplementedError
@@ -43,8 +46,12 @@ class FakeResponse(HTTPResponse):
     def data_json(self) -> object:
         raise NotImplementedError
 
+    def _close(self) -> None:
+        self.is_closed = True
 
-def test_response_context_manager() -> None:
+
+@pytest.mark.parametrize("raise_exception", [False, True])
+def test_response_context_manager(raise_exception: bool) -> None:
     request = HTTPRequest(
         method="GET",
         url="https://example.com/",
@@ -55,15 +62,20 @@ def test_response_context_manager() -> None:
     response = FakeResponse()
     response._set_context(request)  # pylint: disable=protected-access
 
-    with response:
-        pass
+    if raise_exception:
+        with pytest.raises(HTTPContextError) as excinfo:  # noqa: SIM117, PT012
+            with response:
+                assert not response.is_closed
+                raise ValueError("oops")
 
-    with pytest.raises(HTTPContextError) as excinfo:  # noqa: SIM117, PT012
+        exception = excinfo.value
+        assert str(exception) == "ValueError: oops"
+        assert exception.request == request
+        assert exception.response == response
+        assert isinstance(exception.__context__, ValueError)
+
+    else:
         with response:
-            raise ValueError("oops")
+            assert not response.is_closed
 
-    exception = excinfo.value
-    assert str(exception) == "ValueError: oops"
-    assert exception.request == request
-    assert exception.response == response
-    assert isinstance(exception.__context__, ValueError)
+    assert response.is_closed
