@@ -35,7 +35,7 @@
           <a href=".." class="icon icon-home"> SDKite
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
-      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
   </form>
 </div>
       </div>
@@ -97,7 +97,7 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
           <li>User guide &raquo;</li>
       <li>Quickstart</li>
     <li class="wy-breadcrumbs-aside">
@@ -189,6 +189,11 @@ that the attribute should not be used directly.</p>
 &gt;&gt;&gt; world.npc.interact(&quot;ranis&quot;)
 'Have you found the Telvanni spy?'
 
+&gt;&gt;&gt; world.npc.interact(&quot;waldo&quot;)
+Traceback (most recent call last):
+    ...
+sdkite.http.exceptions.HTTPStatusCodeError: Unexpected status code: 404
+
 &gt;&gt;&gt; path = Path(&quot;book.txt&quot;)
 &gt;&gt;&gt; world.book.download(&quot;bk_words_of_the_wind&quot;, path)
 &gt;&gt;&gt; path.read_text()[:18]
@@ -197,9 +202,12 @@ that the attribute should not be used directly.</p>
 
 <ul>
 <li>Sub-clients are used to group endpoints together, and are automatically instantiated</li>
+<li><a href="../http_request/#expected-status-codes">Status codes are checked</a> and an exception is
+  raised on missmatch (only <code>200</code> is allowed by default)</li>
 <li><a href="../http_auth/">Basic authentication</a> is set up on the root client, to be used on all
   sub-clients</li>
-<li>Response streaming is used to store the content of a book into a file</li>
+<li><a href="../http_request/#stream-mode">Response streaming</a> is used to store the content of a
+  book into a file</li>
 </ul>
               
             </div>

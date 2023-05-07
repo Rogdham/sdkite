@@ -35,7 +35,7 @@
           <a href=".." class="icon icon-home"> SDKite
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
-      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
   </form>
 </div>
       </div>
@@ -65,6 +65,8 @@
     <li class="toctree-l2"><a class="reference internal" href="#body">Body</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#headers">Headers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#expected-status-codes">Expected status codes</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#stream-mode">Stream mode</a>
     </li>
@@ -105,7 +107,7 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
           <li>HTTP client &raquo;</li>
       <li>Request</li>
     <li class="wy-breadcrumbs-aside">
@@ -175,10 +177,27 @@ transparently.</p>
 <p>Depending on the <code>body_encoding</code> value, a <code>content-type</code> header may be automatically
 added.</p>
 </div>
+<h2 id="expected-status-codes">Expected status codes</h2>
+<p>The <code>expected_status_codes</code> parameter allows to specify which status codes are expected
+to be returned in the HTTP response. An <code>HTTPStatusCodeError</code> if the value in the
+response is unexpected.</p>
+<p>This argument can be:</p>
+<ul>
+<li>An <code>int</code> (e.g. <code>204</code>)</li>
+<li>A <code>str</code> where the character <code>x</code> means “any digit” (e.g. <code>"2xx"</code>)</li>
+<li>An iterable of the previous items (e.g. <code>("2xx", 404)</code>)</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>By default, only the <code>200</code> status code is considered expected.</p>
+<p>In contrast, other libraries such as <a href="https://github.com/psf/requests">requests</a>
+consider only status codes <code>4xx</code> and <code>5xx</code> to be unexpected.</p>
+</div>
 <h2 id="stream-mode">Stream mode</h2>
 <p>To ask the server to stream the response, set the <code>stream_response</code> parameter to <code>True</code>.</p>
 <p>It is then recommended to use the <code>data_stream</code> attribute of
-<a href="../http_response/">the response object</a>.</p>
+<a href="../http_response/#attributes">the response object</a> and to use it
+<a href="../http_response/#usage-as-a-context-manager">as a context manager</a>.</p>
 <h2 id="retry-options">Retry options</h2>
 <p>If an exception is raised when performing the request, 2 more attempts will be made with
 some wait time between them.</p>

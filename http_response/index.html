@@ -35,7 +35,7 @@
           <a href=".." class="icon icon-home"> SDKite
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
-      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
   </form>
 </div>
       </div>
@@ -60,6 +60,10 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Response</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage-as-a-context-manager">Usage as a context manager</a>
+    </li>
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../http_auth/">Authentication</a>
@@ -93,7 +97,7 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
           <li>HTTP client &raquo;</li>
       <li>Response</li>
     <li class="wy-breadcrumbs-aside">
@@ -106,6 +110,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="http-response">HTTP Response</h1>
+<h2 id="attributes">Attributes</h2>
 <p>The following attributes of the HTTP response can be used:</p>
 <dl>
 <dt><code>status_code</code></dt>
@@ -141,6 +146,53 @@
 <p>The response object coming from the adapter (e.g. <code>requests.Response</code>)</p>
 </dd>
 </dl>
+<h2 id="usage-as-a-context-manager">Usage as a context manager</h2>
+<p>Using a response as a context manager has two main effects.</p>
+<p>First, some allocated resources are cleaned when leaving the context manager.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This depends on the <a href="../http_engine/">HTTP engine</a>, but for example
+<a href="https://github.com/psf/requests">requests</a> needs this in streaming mode to be able
+to release connections back to the pool.</p>
+</div>
+<p>Second, all exceptions raised within the context manager are caught an
+<code>HTTPContextError</code> exception is raised instead.</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; from sdkite.http import HTTPAdapterSpec, HTTPContextError
+
+&gt;&gt;&gt; class RootClient(Client):
+...     _http = HTTPAdapterSpec(url=&quot;https://api.example.com/&quot;)
+...
+...     def get_user(self, user_id):
+...         with self._http.get(f&quot;user/{user_id}&quot;) as response:
+...             return (response.data_json[&quot;name&quot;], response.data_json[&quot;age&quot;])
+
+&gt;&gt;&gt; RootClient().get_user(1)
+('Alice', 42)
+
+&gt;&gt;&gt; RootClient().get_user(2)
+Traceback (most recent call last):
+    ...
+sdkite.http.exceptions.HTTPContextError: KeyError: 'age'
+</code></pre>
+
+<p>This is useful to have the HTTP context (request, response) in which the issue happened,
+for example when validating the data returned by the API endpoint.</p>
+<pre class="codehilite"><code class="language-python">&gt;&gt;&gt; try:
+...     RootClient().get_user(2)
+... except HTTPContextError as ex:
+...     print(f&quot;Invalid API response in URL {ex.request.url}&quot;)
+...     print(f&quot;Got JSON {ex.response.data_json}&quot;)
+...     print(f&quot;Exception raised is {ex}&quot;)
+Invalid API response in URL https://api.example.com/user/2
+Got JSON {'name': 'Bob'}
+Exception raised is KeyError: 'age'
+</code></pre>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The original exception is available through the <code>__cause__</code> attribute of the
+<code>HTTPContextError</code> instance.</p>
+</div>
               
             </div>
           </div><footer>
